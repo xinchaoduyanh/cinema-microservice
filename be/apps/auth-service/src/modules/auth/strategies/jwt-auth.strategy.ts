@@ -19,8 +19,8 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt-auth') {
     private redisService: RedisService,
     @Inject(jwtConfiguration.KEY)
     private jwtConfig: ConfigType<typeof jwtConfiguration>,
-    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.TCP))
-    private readonly userClientTCP: ClientProxy,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.KAFKA))
+    private readonly userClientKafka: ClientProxy,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -40,7 +40,7 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt-auth') {
     if (!isTokenValid) throw new ServerException(ERROR_RESPONSE.UNAUTHORIZED);
 
     const user = await lastValueFrom(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, { id }),
+      this.userClientKafka.send(UserMessagePattern.GET_USER, { id }),
     );
     if(!user) throw new ServerException(ERROR_RESPONSE.UNAUTHORIZED);
     if (!user.isActive) throw new ServerException(ERROR_RESPONSE.USER_DEACTIVATED);

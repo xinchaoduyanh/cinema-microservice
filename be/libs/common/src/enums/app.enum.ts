@@ -1,7 +1,7 @@
-export enum Role {
-  Admin = 'Admin',
-  User = 'User',
-}
+// Role enum moved to identity.enum.ts
+// Now supports: ADMIN, RECEPTIONIST, GUEST
+
+
 
 export enum BodyContentType {
   Json = 'application/json',

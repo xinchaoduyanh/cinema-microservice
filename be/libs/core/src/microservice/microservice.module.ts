@@ -1,4 +1,4 @@
-import { kafkaConfiguration, rabbitmqConfiguration } from '@app/common';
+import { kafkaConfiguration, rabbitmqConfiguration, tcpConfiguration } from '@app/common';
 import { DynamicModule, FactoryProvider, Module, Provider, Type } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
@@ -18,15 +18,18 @@ export class MicroserviceModule {
 
     return {
       provide: uniqueProvideToken,
-      useFactory: (msFactory: MicroserviceFactory) => {
-        const clientOptions = msFactory.createConfig({
-          serviceName: client.name,
-          transport: client.transport,
-          options: client?.options,
-        });
+      useFactory: (configService: ConfigService) => {
+        const clientOptions = MicroserviceFactory.createConfig(
+          {
+            serviceName: client.name,
+            transport: client.transport,
+            options: client?.options,
+          },
+          configService,
+        );
         return ClientProxyFactory.create(clientOptions as ClientOptions);
       },
-      inject: [MicroserviceFactory],
+      inject: [ConfigService],
     };
   }
 
@@ -39,16 +42,9 @@ export class MicroserviceModule {
       imports: [
         ConfigModule.forFeature(rabbitmqConfiguration),
         ConfigModule.forFeature(kafkaConfiguration),
+        ConfigModule.forFeature(tcpConfiguration), 
       ],
-      providers: [
-        {
-          provide: MicroserviceFactory,
-          useFactory: (configService: ConfigService) =>
-            new MicroserviceFactory(configService),
-          inject: [ConfigService],
-        },
-        ...clientProviders,
-      ],
+      providers: [...clientProviders],
       exports: clientProviders.map((p) => p.provide),
     };
   }
@@ -67,9 +63,14 @@ export class MicroserviceModule {
       return {
         provide: uniqueProvideToken,
         useFactory: (
-          msFactory: MicroserviceFactory,
+          configService: ConfigService,
           resolvedOptions: ClientOptions['options'],
         ) => {
+          // Note: registerAsync logic might need adaptation if it relies on MS factory logic
+          // But here it seems to just pass resolvedOptions.
+          // If we want to use MicroserviceFactory for default config even in async, we need to merge.
+          // For now, keeping original logic but removing MS Factory injection.
+          
           const clientOptions: ClientOptions = {
             transport: client.transport,
             options: resolvedOptions,
@@ -77,7 +78,7 @@ export class MicroserviceModule {
 
           return ClientProxyFactory.create(clientOptions);
         },
-        inject: [MicroserviceFactory, asyncConfigToken],
+        inject: [ConfigService, asyncConfigToken],
       };
     });
     const allProviders = [...asyncProviders, ...clientProviders];
@@ -88,16 +89,9 @@ export class MicroserviceModule {
       imports: [
         ConfigModule.forFeature(rabbitmqConfiguration),
         ConfigModule.forFeature(kafkaConfiguration),
+        ConfigModule.forFeature(tcpConfiguration), 
       ],
-      providers: [
-        {
-          provide: MicroserviceFactory,
-          useFactory: (configService: ConfigService) =>
-            new MicroserviceFactory(configService),
-          inject: [ConfigService],
-        },
-        ...allProviders,
-      ],
+      providers: [...allProviders],
       exports: clientProviders.map((p) => p.provide),
     };
   }

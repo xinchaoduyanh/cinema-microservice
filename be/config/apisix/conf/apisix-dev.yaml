@@ -356,6 +356,420 @@ services:
         read: 6
         send: 6
       type: roundrobin
+  - name: movie-service
+    plugins:
+      jwt-auth:
+        _meta:
+          disable: false
+        store_in_ctx: true
+    routes:
+      - methods:
+          - GET
+        name: movie-route-public
+        plugins:
+          jwt-auth:
+            _meta:
+              disable: true
+          proxy-rewrite:
+            regex_uri:
+              - ^/movie-service/(.*)
+              - /$1
+        priority: 1
+        uris:
+          - /movie-service/api/movies
+          - /movie-service/api/movies/*
+          - /movie-service/api/genres
+          - /movie-service/swagger
+          - /movie-service/swagger/*
+      - methods:
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        name: movie-route-protected
+        plugins:
+          proxy-rewrite:
+            regex_uri:
+              - ^/movie-service/(.*)
+              - /$1
+          jwt-auth:
+            _meta:
+              disable: false
+            store_in_ctx: true
+          serverless-post-function:
+            _meta:
+              disable: false
+              priority: -1000
+            functions:
+              - |-
+                return function(conf, ctx)
+                  local core = require("apisix.core")
+                  local payload = ctx.jwt_auth_payload
+                  local header_value = ""
+
+                  if payload then
+                    local ok, res = pcall(require, "cjson")
+                    if ok then
+                        header_value = res.encode(payload)
+                        ngx.log(ngx.NOTICE, "JWT Claims (JSON) set to X-Auth-User.")
+                    else
+                        ngx.log(ngx.ERR, "Error requiring cjson. Cannot serialize JWT payload. Setting X-Auth-User to empty string.")
+                    end
+                  else
+                    ngx.log(ngx.NOTICE, "JWT Payload not found in context. Setting X-Auth-User to empty string.")
+                  end
+
+                  core.request.set_header(ctx, "x-auth-user", header_value)
+                end
+            phase: access
+        priority: 0
+        uris:
+          - /movie-service/*
+    upstream:
+      keepalive_pool:
+        idle_timeout: 60
+        requests: 1000
+        size: 320
+      name: movie-upstream
+      nodes:
+        - host: ${APISIX_MOVIE_SERVICE_HOST}
+          port: ${APISIX_MOVIE_SERVICE_PORT}
+          priority: 0
+          weight: 1
+      pass_host: pass
+      scheme: http
+      timeout:
+        connect: 6
+        read: 6
+        send: 6
+      type: roundrobin
+  - name: cinema-service
+    plugins:
+      jwt-auth:
+        _meta:
+          disable: false
+        store_in_ctx: true
+    routes:
+      - methods:
+          - GET
+        name: cinema-route-public
+        plugins:
+          jwt-auth:
+            _meta:
+              disable: true
+          proxy-rewrite:
+            regex_uri:
+              - ^/cinema-service/(.*)
+              - /$1
+        priority: 1
+        uris:
+          - /cinema-service/api/cinemas
+          - /cinema-service/api/cinemas/*
+          - /cinema-service/api/theaters/*
+          - /cinema-service/swagger
+          - /cinema-service/swagger/*
+      - methods:
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        name: cinema-route-protected
+        plugins:
+          proxy-rewrite:
+            regex_uri:
+              - ^/cinema-service/(.*)
+              - /$1
+          jwt-auth:
+            _meta:
+              disable: false
+            store_in_ctx: true
+          serverless-post-function:
+            _meta:
+              disable: false
+              priority: -1000
+            functions:
+              - |-
+                return function(conf, ctx)
+                  local core = require("apisix.core")
+                  local payload = ctx.jwt_auth_payload
+                  local header_value = ""
+
+                  if payload then
+                    local ok, res = pcall(require, "cjson")
+                    if ok then
+                        header_value = res.encode(payload)
+                    end
+                  end
+
+                  core.request.set_header(ctx, "x-auth-user", header_value)
+                end
+            phase: access
+        priority: 0
+        uris:
+          - /cinema-service/*
+    upstream:
+      keepalive_pool:
+        idle_timeout: 60
+        requests: 1000
+        size: 320
+      name: cinema-upstream
+      nodes:
+        - host: ${APISIX_CINEMA_SERVICE_HOST}
+          port: ${APISIX_CINEMA_SERVICE_PORT}
+          priority: 0
+          weight: 1
+      pass_host: pass
+      scheme: http
+      timeout:
+        connect: 6
+        read: 6
+        send: 6
+      type: roundrobin
+  - name: booking-service
+    plugins:
+      jwt-auth:
+        _meta:
+          disable: false
+        store_in_ctx: true
+    routes:
+      - methods:
+          - POST
+        name: booking-route-guest
+        plugins:
+          jwt-auth:
+            _meta:
+              disable: true
+          proxy-rewrite:
+            regex_uri:
+              - ^/booking-service/(.*)
+              - /$1
+        priority: 1
+        uris:
+          - /booking-service/api/bookings/guest
+          - /booking-service/api/bookings/lock-seats
+          - /booking-service/swagger
+          - /booking-service/swagger/*
+      - methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        name: booking-route-protected
+        plugins:
+          proxy-rewrite:
+            regex_uri:
+              - ^/booking-service/(.*)
+              - /$1
+          jwt-auth:
+            _meta:
+              disable: false
+            store_in_ctx: true
+          serverless-post-function:
+            _meta:
+              disable: false
+              priority: -1000
+            functions:
+              - |-
+                return function(conf, ctx)
+                  local core = require("apisix.core")
+                  local payload = ctx.jwt_auth_payload
+                  local header_value = ""
+
+                  if payload then
+                    local ok, res = pcall(require, "cjson")
+                    if ok then
+                        header_value = res.encode(payload)
+                    end
+                  end
+
+                  core.request.set_header(ctx, "x-auth-user", header_value)
+                end
+            phase: access
+        priority: 0
+        uris:
+          - /booking-service/*
+    upstream:
+      keepalive_pool:
+        idle_timeout: 60
+        requests: 1000
+        size: 320
+      name: booking-upstream
+      nodes:
+        - host: ${APISIX_BOOKING_SERVICE_HOST}
+          port: ${APISIX_BOOKING_SERVICE_PORT}
+          priority: 0
+          weight: 1
+      pass_host: pass
+      scheme: http
+      timeout:
+        connect: 6
+        read: 6
+        send: 6
+      type: roundrobin
+  - name: showtime-service
+    plugins:
+      jwt-auth:
+        _meta:
+          disable: false
+        store_in_ctx: true
+    routes:
+      - methods:
+          - GET
+        name: showtime-route-public
+        plugins:
+          jwt-auth:
+            _meta:
+              disable: true
+          proxy-rewrite:
+            regex_uri:
+              - ^/showtime-service/(.*)
+              - /$1
+        priority: 1
+        uris:
+          - /showtime-service/api/showtimes
+          - /showtime-service/api/showtimes/*
+          - /showtime-service/swagger
+          - /showtime-service/swagger/*
+      - methods:
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        name: showtime-route-protected
+        plugins:
+          proxy-rewrite:
+            regex_uri:
+              - ^/showtime-service/(.*)
+              - /$1
+          jwt-auth:
+            _meta:
+              disable: false
+            store_in_ctx: true
+          serverless-post-function:
+            _meta:
+              disable: false
+              priority: -1000
+            functions:
+              - |-
+                return function(conf, ctx)
+                  local core = require("apisix.core")
+                  local payload = ctx.jwt_auth_payload
+                  local header_value = ""
+
+                  if payload then
+                    local ok, res = pcall(require, "cjson")
+                    if ok then
+                        header_value = res.encode(payload)
+                    end
+                  end
+
+                  core.request.set_header(ctx, "x-auth-user", header_value)
+                end
+            phase: access
+        priority: 0
+        uris:
+          - /showtime-service/*
+    upstream:
+      keepalive_pool:
+        idle_timeout: 60
+        requests: 1000
+        size: 320
+      name: showtime-upstream
+      nodes:
+        - host: ${APISIX_SHOWTIME_SERVICE_HOST}
+          port: ${APISIX_SHOWTIME_SERVICE_PORT}
+          priority: 0
+          weight: 1
+      pass_host: pass
+      scheme: http
+      timeout:
+        connect: 6
+        read: 6
+        send: 6
+      type: roundrobin
+  - name: payment-service
+    plugins:
+      jwt-auth:
+        _meta:
+          disable: false
+        store_in_ctx: true
+    routes:
+      - methods:
+          - POST
+          - GET
+        name: payment-route-public
+        plugins:
+          jwt-auth:
+            _meta:
+              disable: true
+          proxy-rewrite:
+            regex_uri:
+              - ^/payment-service/(.*)
+              - /$1
+        priority: 1
+        uris:
+          - /payment-service/api/payments/callback
+          - /payment-service/api/payments/ipn
+          - /payment-service/swagger
+          - /payment-service/swagger/*
+      - methods:
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        name: payment-route-protected
+        plugins:
+          proxy-rewrite:
+            regex_uri:
+              - ^/payment-service/(.*)
+              - /$1
+          jwt-auth:
+            _meta:
+              disable: false
+            store_in_ctx: true
+          serverless-post-function:
+            _meta:
+              disable: false
+              priority: -1000
+            functions:
+              - |-
+                return function(conf, ctx)
+                  local core = require("apisix.core")
+                  local payload = ctx.jwt_auth_payload
+                  local header_value = ""
+
+                  if payload then
+                    local ok, res = pcall(require, "cjson")
+                    if ok then
+                        header_value = res.encode(payload)
+                    end
+                  end
+
+                  core.request.set_header(ctx, "x-auth-user", header_value)
+                end
+            phase: access
+        priority: 0
+        uris:
+          - /payment-service/*
+    upstream:
+      keepalive_pool:
+        idle_timeout: 60
+        requests: 1000
+        size: 320
+      name: payment-upstream
+      nodes:
+        - host: ${APISIX_PAYMENT_SERVICE_HOST}
+          port: ${APISIX_PAYMENT_SERVICE_PORT}
+          priority: 0
+          weight: 1
+      pass_host: pass
+      scheme: http
+      timeout:
+        connect: 6
+        read: 6
+        send: 6
+      type: roundrobin
 ssls: [ ]
 
 

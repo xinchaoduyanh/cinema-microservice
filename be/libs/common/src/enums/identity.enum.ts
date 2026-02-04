@@ -3,3 +3,77 @@ export enum Gender {
   Female = 'Female',
   Other = 'Other',
 }
+
+/**
+ * User roles in the cinema management system
+ */
+export enum Role {
+  ADMIN = 'ADMIN',
+  RECEPTIONIST = 'RECEPTIONIST',
+  GUEST = 'GUEST',
+}
+
+/**
+ * Granular permissions for fine-grained access control
+ */
+export enum Permission {
+  // Movie Management
+  MOVIE_CREATE = 'MOVIE_CREATE',
+  MOVIE_UPDATE = 'MOVIE_UPDATE',
+  MOVIE_DELETE = 'MOVIE_DELETE',
+  MOVIE_VIEW = 'MOVIE_VIEW',
+
+  // Cinema Management
+  CINEMA_CREATE = 'CINEMA_CREATE',
+  CINEMA_UPDATE = 'CINEMA_UPDATE',
+  CINEMA_DELETE = 'CINEMA_DELETE',
+  CINEMA_VIEW = 'CINEMA_VIEW',
+
+  // Theater Management
+  THEATER_CREATE = 'THEATER_CREATE',
+  THEATER_UPDATE = 'THEATER_UPDATE',
+  THEATER_DELETE = 'THEATER_DELETE',
+  THEATER_VIEW = 'THEATER_VIEW',
+
+  // Showtime Management
+  SHOWTIME_CREATE = 'SHOWTIME_CREATE',
+  SHOWTIME_UPDATE = 'SHOWTIME_UPDATE',
+  SHOWTIME_DELETE = 'SHOWTIME_DELETE',
+  SHOWTIME_VIEW = 'SHOWTIME_VIEW',
+
+  // Booking Management
+  BOOKING_CREATE = 'BOOKING_CREATE',
+  BOOKING_VIEW = 'BOOKING_VIEW',
+  BOOKING_VIEW_ALL = 'BOOKING_VIEW_ALL',
+  BOOKING_CANCEL = 'BOOKING_CANCEL',
+  BOOKING_VALIDATE = 'BOOKING_VALIDATE', // For receptionist to validate tickets
+
+  // F&B Management
+  FNB_CREATE = 'FNB_CREATE',
+  FNB_UPDATE = 'FNB_UPDATE',
+  FNB_DELETE = 'FNB_DELETE',
+  FNB_VIEW = 'FNB_VIEW',
+  FNB_ORDER = 'FNB_ORDER', // For receptionist to process orders
+
+  // Promotion Management
+  PROMOTION_CREATE = 'PROMOTION_CREATE',
+  PROMOTION_UPDATE = 'PROMOTION_UPDATE',
+  PROMOTION_DELETE = 'PROMOTION_DELETE',
+  PROMOTION_VIEW = 'PROMOTION_VIEW',
+  PROMOTION_APPLY = 'PROMOTION_APPLY',
+
+  // User Management
+  USER_CREATE = 'USER_CREATE',
+  USER_UPDATE = 'USER_UPDATE',
+  USER_DELETE = 'USER_DELETE',
+  USER_VIEW = 'USER_VIEW',
+  USER_VIEW_ALL = 'USER_VIEW_ALL',
+
+  // Report Management
+  REPORT_VIEW = 'REPORT_VIEW',
+  REPORT_EXPORT = 'REPORT_EXPORT',
+
+  // Payment Management
+  PAYMENT_VIEW = 'PAYMENT_VIEW',
+  PAYMENT_REFUND = 'PAYMENT_REFUND',
+}

@@ -7,8 +7,11 @@ export * from './enums';
 export * from './errors';
 export * from './events';
 export * from './exceptions';
+export * from './guards';
 export * from './utilities';
 export * from './interceptors';
 export * from './middlewares';
 export * from './pipes';
 export * from './interfaces';
+
+export * from './saga/saga-event.emitter';

@@ -12,8 +12,8 @@ import { lastValueFrom } from 'rxjs';
 export class GatewayAuthStrategy extends PassportStrategy(Strategy, 'gateway-auth') {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.TCP))
-    private readonly userClientTCP: ClientProxy,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.KAFKA))
+    private readonly userClientKafka: ClientProxy,
   ) {
     super();
   }
@@ -27,7 +27,7 @@ export class GatewayAuthStrategy extends PassportStrategy(Strategy, 'gateway-aut
     if (!authUser?.id) throw new ServerException(ERROR_RESPONSE.UNAUTHORIZED);
 
     const user = await lastValueFrom(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, { id: authUser.id }),
+      this.userClientKafka.send(UserMessagePattern.GET_USER, { id: authUser.id }),
     );
     if(!user) throw new ServerException(ERROR_RESPONSE.UNAUTHORIZED);
     if (!user.isActive) throw new ServerException(ERROR_RESPONSE.USER_DEACTIVATED);

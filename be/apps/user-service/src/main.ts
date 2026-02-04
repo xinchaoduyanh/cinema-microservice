@@ -47,22 +47,22 @@ async function bootstrap() {
   await app.init();
 
   // Start microservice
-  const msFactory = new MicroserviceFactory(configService);
+  // const msFactory = new MicroserviceFactory(configService); // Removed incorrect instantiation
 
-  // const kafkaConsumerConfig = msFactory.createConfig({
-  //   serviceName: MicroserviceName.UserService,
-  //   transport: Transport.KAFKA,
-  // } as MicroserviceConfigOptions);
-  // await app.connectMicroservice<MicroserviceOptions>(kafkaConsumerConfig);
+  const kafkaConsumerConfig = MicroserviceFactory.createConfig({
+    serviceName: MicroserviceName.UserService,
+    transport: Transport.KAFKA,
+  } as MicroserviceConfigOptions, configService);
+  await app.connectMicroservice<MicroserviceOptions>(kafkaConsumerConfig);
 
-  const tcpListener = configService.get('tcp.userService');
-  const tcpConfig = msFactory.createConfig({
-    transport: Transport.TCP,
-    options: {
-      ...tcpListener,
-    },
-  } as unknown as MicroserviceConfigOptions);
-  await app.connectMicroservice<MicroserviceOptions>(tcpConfig);
+  // const tcpListener = configService.get('tcp.userService');
+  // const tcpConfig = msFactory.createConfig({
+  //   transport: Transport.TCP,
+  //   options: {
+  //     ...tcpListener,
+  //   },
+  // } as unknown as MicroserviceConfigOptions);
+  // await app.connectMicroservice<MicroserviceOptions>(tcpConfig);
 
   await app.startAllMicroservices();
   await app.listen(appPort);
@@ -71,7 +71,7 @@ async function bootstrap() {
     nodeEnv,
     logger,
     appPort,
-    tcpListener,
+    // tcpListener,
   });
 }
 

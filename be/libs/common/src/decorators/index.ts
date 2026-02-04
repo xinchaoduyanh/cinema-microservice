@@ -6,3 +6,5 @@ export * from './access-control.decorator';
 export * from './custom-validator.decorator';
 export * from './parse-array-params.decorator';
 export * from './rbac.decorator';
+export * from './roles.decorator';
+export * from './permissions.decorator';

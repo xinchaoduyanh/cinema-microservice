@@ -9,6 +9,7 @@ import {
 } from '@app/common';
 import {
   AwsS3Module,
+  MicroserviceFactory,
   MicroserviceModule,
   MicroserviceName,
   RedisModule,
@@ -53,24 +54,30 @@ import { AuthModule } from './auth';
     MicroserviceModule.registerAsync([
       {
         name: MicroserviceName.UserService,
-        transport: Transport.TCP,
+        transport: Transport.KAFKA,
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => {
-          const userTcpURLConfig = configService.get('tcp.userService');
-          return {
-            ...userTcpURLConfig,
-          };
+          return MicroserviceFactory.createConfig(
+            {
+              serviceName: MicroserviceName.UserService,
+              transport: Transport.KAFKA,
+            },
+            configService,
+          ).options;
         },
       },
       {
         name: MicroserviceName.NotificationService,
-        transport: Transport.TCP,
+        transport: Transport.KAFKA,
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => {
-          const notificationTcpURLConfig = configService.get('tcp.notificationService');
-          return {
-            ...notificationTcpURLConfig,
-          };
+          return MicroserviceFactory.createConfig(
+            {
+              serviceName: MicroserviceName.NotificationService,
+              transport: Transport.KAFKA,
+            },
+            configService,
+          ).options;
         },
       },
     ]),

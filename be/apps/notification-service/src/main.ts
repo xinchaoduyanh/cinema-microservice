@@ -1,6 +1,10 @@
 import { getAppCommonConfig, getWinstonConfig, logBootstrapInfo, setupSwagger } from '@app/common';
 import { PayloadValidationPipe } from '@app/common';
-import { MicroserviceConfigOptions, MicroserviceFactory } from '@app/core';
+import {
+  MicroserviceConfigOptions,
+  MicroserviceFactory,
+  MicroserviceName,
+} from '@app/core';
 import { ClassSerializerInterceptor } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -42,22 +46,22 @@ async function bootstrap() {
   await app.init();
 
   // Start microservice
-  const msFactory = new MicroserviceFactory(configService);
+  // const msFactory = new MicroserviceFactory(configService);
 
-  // const kafkaConsumerConfig = msFactory.createConfig({
-  //   serviceName: MicroserviceName.NotificationService,
-  //   transport: Transport.KAFKA,
-  // } as MicroserviceConfigOptions);
-  // await app.connectMicroservice<MicroserviceOptions>(kafkaConsumerConfig);
+  const kafkaConsumerConfig = MicroserviceFactory.createConfig({
+    serviceName: MicroserviceName.NotificationService,
+    transport: Transport.KAFKA,
+  } as MicroserviceConfigOptions, configService);
+  await app.connectMicroservice<MicroserviceOptions>(kafkaConsumerConfig);
 
-  const tcpListener = configService.get('tcp.notificationService');
-  const tcpConfig = msFactory.createConfig({
-    transport: Transport.TCP,
-    options: {
-      ...tcpListener,
-    },
-  } as unknown as MicroserviceConfigOptions);
-  await app.connectMicroservice<MicroserviceOptions>(tcpConfig);
+  // const tcpListener = configService.get('tcp.notificationService');
+  // const tcpConfig = MicroserviceFactory.createConfig({
+  //   transport: Transport.TCP,
+  //   options: {
+  //     ...tcpListener,
+  //   },
+  // } as unknown as MicroserviceConfigOptions, configService);
+  // await app.connectMicroservice<MicroserviceOptions>(tcpConfig);
 
   await app.startAllMicroservices();
   await app.listen(appPort);
@@ -66,7 +70,7 @@ async function bootstrap() {
     nodeEnv,
     logger,
     appPort,
-    tcpListener,
+    // tcpListener,
   });
 }
 

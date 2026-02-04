@@ -1,10 +1,11 @@
 import * as dotenv from 'dotenv';
+import path from 'path';
 import { NodeEnv } from '@app/common';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { registerAs } from '@nestjs/config';
 import * as entities from '../data-access/all.entity';
 
-dotenv.config();
+dotenv.config({ path: '/work/.env' });
 
 export const databaseConfig = {
   driver: PostgreSqlDriver,

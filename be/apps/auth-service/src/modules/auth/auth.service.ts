@@ -27,7 +27,7 @@ import {
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { ClientProxy, Transport } from '@nestjs/microservices';
+import { ClientKafka, ClientProxy, Transport } from '@nestjs/microservices';
 import { appConfiguration } from 'src/config';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -56,32 +56,42 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
     @Inject(codeExpiresConfiguration.KEY)
     private readonly codeExpiresConfig: ConfigType<typeof codeExpiresConfiguration>,
-    // @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.KAFKA))
-    // private readonly userClientKafka: ClientKafka,
-    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.TCP))
-    private readonly userClientTCP: ClientProxy,
-    @Inject(MS_INJECTION_TOKEN(MicroserviceName.NotificationService, Transport.TCP))
-    private readonly notificationClientTCP: ClientProxy,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.KAFKA))
+    private readonly userClientKafka: ClientKafka,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.NotificationService, Transport.KAFKA))
+    private readonly notificationClientKafka: ClientKafka,
   ) {
     super();
   }
 
   async onModuleInit() {
-    // const replyTopics = [..._.values(UserMessagePattern)];
-    // for (const topic of replyTopics) {
-    //   this.userClientKafka.subscribeToResponseOf(topic);
-    // }
-    // await this.userClientKafka.connect();
+    const userTopics = Object.values(UserMessagePattern);
+    for (const topic of userTopics) {
+      this.userClientKafka.subscribeToResponseOf(topic);
+    }
+
+    const notificationTopics = Object.values(NotificationMessagePattern);
+    for (const topic of notificationTopics) {
+      this.notificationClientKafka.subscribeToResponseOf(topic);
+    }
+
+    await Promise.all([
+      this.userClientKafka.connect(),
+      this.notificationClientKafka.connect(),
+    ]);
   }
 
   async onModuleDestroy() {
-    // await this.userClientKafka.close();
+    await Promise.all([
+      this.userClientKafka.close(),
+      this.notificationClientKafka.close(),
+    ]);
   }
 
   async login(body: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = body;
     const user = await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, { email }),
+      this.userClientKafka.send(UserMessagePattern.GET_USER, { email }),
     );
     if (!user?.password) throw new ServerException(ERROR_RESPONSE.INVALID_CREDENTIALS);
     if (!user.isActive) throw new ServerException(ERROR_RESPONSE.USER_DEACTIVATED);
@@ -99,10 +109,10 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
       ...body,
       isActive: true,
       emailVerified: false,
-      role: Role.User,
+      role: body.role || Role.GUEST,
     };
     const newUser = await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.CREATE_USER, userData),
+      this.userClientKafka.send(UserMessagePattern.CREATE_USER, userData),
     );
 
     return this.manageUserToken(newUser);
@@ -130,7 +140,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
   async sendResetPasswordLink(body: ForgotPasswordDto): Promise<SuccessResponseDto> {
     const { email } = body;
     const user = await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, { email }),
+      this.userClientKafka.send(UserMessagePattern.GET_USER, { email }),
     );
     if (!user) throw new ServerException(ERROR_RESPONSE.USER_NOT_FOUND);
 
@@ -156,7 +166,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
       AccountAction.ResetPassword;
 
     const success = await this.msResponse(
-      this.notificationClientTCP.send(NotificationMessagePattern.FORGOT_PASSWORD, {
+      this.notificationClientKafka.send(NotificationMessagePattern.FORGOT_PASSWORD, {
         email,
         name: user.fullName,
         resetPasswordUrl,
@@ -177,7 +187,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
   ): Promise<VerifyResetPasswordResponseDto> {
     const { email, token } = body;
     const user = await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, { email }),
+      this.userClientKafka.send(UserMessagePattern.GET_USER, { email }),
     );
     if (!user) {
       throw new ServerException(ERROR_RESPONSE.USER_NOT_FOUND);
@@ -191,7 +201,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
     const { newPassword, email, token } = body;
 
     const user = await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, { email }),
+      this.userClientKafka.send(UserMessagePattern.GET_USER, { email }),
     );
     if (!user) {
       throw new ServerException(ERROR_RESPONSE.USER_NOT_FOUND);
@@ -215,7 +225,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
       passwordChangedAt: new Date(),
     };
     await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.UPDATE_USER, userData),
+      this.userClientKafka.send(UserMessagePattern.UPDATE_USER, userData),
     );
 
     // Update redis
@@ -294,7 +304,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
   ): Promise<SuccessResponseDto> {
     const { password: currentPassword, newPassword } = body;
     const user = await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.GET_USER, {
+      this.userClientKafka.send(UserMessagePattern.GET_USER, {
         email: userPayload.email,
       }),
     );
@@ -322,7 +332,7 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
       passwordChangedAt: new Date(),
     };
     await this.msResponse(
-      this.userClientTCP.send(UserMessagePattern.UPDATE_USER, userData),
+      this.userClientKafka.send(UserMessagePattern.UPDATE_USER, userData),
     );
 
     // Update redis

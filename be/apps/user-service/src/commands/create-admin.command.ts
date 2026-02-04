@@ -44,7 +44,7 @@ export class CreateAdminCommand extends CommandRunner {
         fullName: 'ADMIN',
         isActive: true,
         emailVerified: true,
-        role: Role.Admin,
+        role: Role.ADMIN,
       };
       const newAdmin = em.create(User, userData);
       await em.persistAndFlush(newAdmin);

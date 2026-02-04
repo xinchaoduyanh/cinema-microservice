@@ -9,80 +9,83 @@ import {
 } from './microservice.interface';
 
 export class MicroserviceFactory {
-  private kafkaConfig: ConfigType<typeof kafkaConfiguration>;
-  private rabbitmqConfig: ConfigType<typeof rabbitmqConfiguration>;
-
-  constructor(private readonly configService: ConfigService) {
-    this.kafkaConfig = configService.get('kafka');
-    this.rabbitmqConfig = configService.get('rabbitmq');
-  }
-
-  private createRmqConfig(rqmOptions: RmqMicroserviceOptions): CustomClientOptions {
+  private static createRmqConfig(
+    rqmOptions: RmqMicroserviceOptions,
+    configService: ConfigService,
+  ): CustomClientOptions {
     return {
       name: rqmOptions.serviceName,
-      transport: rqmOptions.transport,
+      transport: Transport.RMQ,
       options: rqmOptions.options,
     } as unknown as CustomClientOptions;
   }
 
-  private createKafkaConfig(kafkaOptions: KafkaMicroserviceOptions): CustomClientOptions {
+  private static createKafkaConfig(
+    kafkaOptions: KafkaMicroserviceOptions,
+    configService: ConfigService,
+  ): CustomClientOptions {
+    const kafkaConfig = configService.get<ConfigType<typeof kafkaConfiguration>>('kafka');
+    
+    // Default kafka options
     const options: { [key: string]: any } = {
       client: {
         clientId: kafkaOptions.serviceName,
-        brokers: this.kafkaConfig.brokers,
+        brokers: kafkaConfig?.brokers || ['localhost:9092'],
       },
       producer: {
         allowAutoTopicCreation: true,
         idempotent: true,
         maxInFlightRequests: 5,
-        acks: 1,
-        // retry: {
-        //   retries: 5,
-        //   initialRetryTime: 300
-        // },
+        acks: 'all',
       },
       consumer: {
         groupId: `${kafkaOptions.serviceName}_consumer`,
         allowAutoTopicCreation: true,
-        heartbeatInterval: this.kafkaConfig.heartbeatInterval,
-        sessionTimeout: this.kafkaConfig.sessionTimeout,
+        heartbeatInterval: kafkaConfig?.heartbeatInterval || 3000,
+        sessionTimeout: kafkaConfig?.sessionTimeout || 30000,
       },
     };
 
-    if (this.kafkaConfig.saslEnabled) {
+    if (kafkaConfig?.saslEnabled) {
       options.client.ssl = true;
       options.client.sasl = {
-        mechanism: this.kafkaConfig.saslMechanism,
-        username: this.kafkaConfig.saslUsername,
-        password: this.kafkaConfig.saslPassword,
+        mechanism: kafkaConfig.saslMechanism,
+        username: kafkaConfig.saslUsername,
+        password: kafkaConfig.saslPassword,
       };
     }
 
     return {
       name: kafkaOptions.serviceName,
-      transport: kafkaOptions.transport,
+      transport: Transport.KAFKA,
       options: options,
     } as unknown as CustomClientOptions;
   }
 
-  private createTCPConfig(tcpOptions: TCPMicroserviceOptions): CustomClientOptions {
+  private static createTCPConfig(
+    tcpOptions: TCPMicroserviceOptions,
+    configService: ConfigService,
+  ): CustomClientOptions {
     return {
       name: tcpOptions.serviceName,
-      transport: tcpOptions.transport,
+      transport: Transport.TCP,
       options: tcpOptions.options,
     } as unknown as CustomClientOptions;
   }
 
-  public createConfig(options: MicroserviceConfigOptions): CustomClientOptions {
+  public static createConfig(
+    options: MicroserviceConfigOptions,
+    configService: ConfigService,
+  ): CustomClientOptions {
     switch (options.transport) {
       case Transport.RMQ:
-        return this.createRmqConfig(options as RmqMicroserviceOptions);
+        return this.createRmqConfig(options as RmqMicroserviceOptions, configService);
 
       case Transport.KAFKA:
-        return this.createKafkaConfig(options as KafkaMicroserviceOptions);
+        return this.createKafkaConfig(options as KafkaMicroserviceOptions, configService);
 
       case Transport.TCP:
-        return this.createTCPConfig(options as TCPMicroserviceOptions);
+        return this.createTCPConfig(options as TCPMicroserviceOptions, configService);
 
       default:
         throw new Error(`MicroserviceFactory: Unsupported transport type`);
