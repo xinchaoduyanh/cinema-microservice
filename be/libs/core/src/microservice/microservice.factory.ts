@@ -31,18 +31,37 @@ export class MicroserviceFactory {
       client: {
         clientId: kafkaOptions.serviceName,
         brokers: kafkaConfig?.brokers || ['localhost:9092'],
+        connectionTimeout: 10000, // 10 seconds
+        requestTimeout: 30000, // 30 seconds
+        retry: {
+          initialRetryTime: 300,
+          retries: 10,
+          maxRetryTime: 30000,
+          multiplier: 2,
+          factor: 0.2,
+        },
       },
       producer: {
         allowAutoTopicCreation: true,
         idempotent: true,
         maxInFlightRequests: 5,
         acks: 'all',
+        retry: {
+          initialRetryTime: 300,
+          retries: 10,
+          maxRetryTime: 30000,
+        },
       },
       consumer: {
         groupId: `${kafkaOptions.serviceName}_consumer`,
         allowAutoTopicCreation: true,
         heartbeatInterval: kafkaConfig?.heartbeatInterval || 3000,
         sessionTimeout: kafkaConfig?.sessionTimeout || 30000,
+        retry: {
+          initialRetryTime: 300,
+          retries: 10,
+          maxRetryTime: 30000,
+        },
       },
     };
 

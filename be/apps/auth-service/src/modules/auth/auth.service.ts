@@ -24,7 +24,7 @@ import {
   MS_INJECTION_TOKEN,
   RedisService,
 } from '@app/core';
-import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ClientKafka, ClientProxy, Transport } from '@nestjs/microservices';
@@ -44,6 +44,8 @@ import {
 
 @Injectable()
 export class AuthService extends BaseService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
@@ -65,20 +67,27 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
   }
 
   async onModuleInit() {
-    const userTopics = Object.values(UserMessagePattern);
-    for (const topic of userTopics) {
-      this.userClientKafka.subscribeToResponseOf(topic);
-    }
+    try {
+      const userTopics = Object.values(UserMessagePattern);
+      for (const topic of userTopics) {
+        this.userClientKafka.subscribeToResponseOf(topic);
+      }
 
-    const notificationTopics = Object.values(NotificationMessagePattern);
-    for (const topic of notificationTopics) {
-      this.notificationClientKafka.subscribeToResponseOf(topic);
-    }
+      const notificationTopics = Object.values(NotificationMessagePattern);
+      for (const topic of notificationTopics) {
+        this.notificationClientKafka.subscribeToResponseOf(topic);
+      }
 
-    await Promise.all([
-      this.userClientKafka.connect(),
-      this.notificationClientKafka.connect(),
-    ]);
+      this.logger.log('Connecting to Kafka...');
+      await Promise.all([
+        this.userClientKafka.connect(),
+        this.notificationClientKafka.connect(),
+      ]);
+      this.logger.log('Successfully connected to Kafka');
+    } catch (error) {
+      this.logger.error('Failed to connect to Kafka:', error);
+      // Don't throw - let the retry logic handle it
+    }
   }
 
   async onModuleDestroy() {

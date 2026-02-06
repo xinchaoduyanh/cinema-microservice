@@ -56,12 +56,6 @@ export class User extends BaseEntity<User> {
   @Property({ nullable: true })
   googleId: string;
 
-  @Property({ nullable: true })
-  googleName: string;
-
-  @Property({ nullable: true })
-  googleAvatar: string;
-
   @Property({ fieldName: 'is_2fa_enabled', default: false })
   is2faEnabled: boolean;
 }
