@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@mikro-orm/cli": "^6.5.8",
+    "@mikro-orm/seeder": "6.5.8",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.10.8",
     "supertest": "^7.0.0",

@@ -14,15 +14,22 @@ export class MovieSeeder extends Seeder {
     ];
 
     const genreMap = new Map<string, Genre>();
+    
+    // Fetch existing genres
+    const existingGenres = await em.find(Genre, {});
+    existingGenres.forEach(g => genreMap.set(g.name, g));
+
     for (const name of genresData) {
-      const genre = em.create(Genre, {
-        name,
-        slug: name.toLowerCase().replace(/ /g, '-'),
-      });
-      genreMap.set(name, genre);
+      if (!genreMap.has(name)) {
+        const genre = em.create(Genre, {
+          name,
+          slug: name.toLowerCase().replace(/ /g, '-'),
+        });
+        genreMap.set(name, genre);
+      }
     }
 
-    const movies = [
+    const moviesData = [
       {
         title: "OPPENHEIMER",
         description: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
@@ -76,7 +83,10 @@ export class MovieSeeder extends Seeder {
       }
     ];
 
-    for (const mData of movies) {
+    for (const mData of moviesData) {
+      const existingMovie = await em.findOne(Movie, { title: mData.title });
+      if (existingMovie) continue;
+
       const movie = em.create(Movie, {
         title: mData.title,
         description: mData.description,
@@ -112,5 +122,7 @@ export class MovieSeeder extends Seeder {
         em.create(MovieCast, { movie, person, roleName: cData.role });
       }
     }
+    
+    await em.flush();
   }
 }

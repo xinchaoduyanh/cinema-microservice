@@ -18,11 +18,17 @@ export const databaseConfig = {
   user: process.env.MOVIE_SERVICE_DB_USERNAME || '',
   password: process.env.MOVIE_SERVICE_DB_PASSWORD || '',
   schema: process.env.MOVIE_SERVICE_DB_SCHEMA || 'public',
+  clientUrl: process.env.MOVIE_SERVICE_DB_URL,
   baseDir: __dirname,
   debug: process.env.NODE_ENV === NodeEnv.Development,
   entities: [Movie, Genre, Person, MovieGenre, MovieDirector, MovieCast],
   cache: {
     enabled: false,
+  },
+  driverOptions: {
+    connection: {
+      ssl: process.env.MOVIE_SERVICE_DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    },
   },
 };
 

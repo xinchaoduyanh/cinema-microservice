@@ -2,7 +2,7 @@ import { hashData, Role } from '@app/common';
 import { EntityManager } from '@mikro-orm/core';
 import chalk from 'chalk';
 import { Command, CommandRunner, InquirerService, Option } from 'nest-commander';
-import { User, UserRepository } from 'src/data-access/user';
+import { User, UserRepository } from '../data-access/user';
 import { commandConstants, questionConstants } from './command.constant';
 
 @Command({
