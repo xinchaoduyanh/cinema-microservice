@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/home/sotatek/Documents/working/cinema-management/be/logs/.b772a788da3c56500f937a3ba0e9fe6f0825c82e-audit.json",
+    "files": [
+        {
+            "date": 1770623208180,
+            "name": "/home/sotatek/Documents/working/cinema-management/be/logs/mcp-puppeteer-2026-02-09.log",
+            "hash": "198c85ddf1fd670ecced0d4e8c52622198bd3353d62570d9ad9081c7d92f1001"
+        }
+    ],
+    "hashType": "sha256"
+}

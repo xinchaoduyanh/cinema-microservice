@@ -8,6 +8,10 @@ import { MovieRepository } from '../../data-access/movie/movie.repository';
 import { Genre } from '../../data-access/genre/genre.entity';
 import { MovieGenre } from '../../data-access/movie-genre/movie-genre.entity';
 
+import { Person } from '../../data-access/person/person.entity';
+import { MovieDirector } from '../../data-access/movie-director/movie-director.entity';
+import { MovieCast } from '../../data-access/movie-cast/movie-cast.entity';
+
 @Injectable()
 export class MovieService {
   constructor(
@@ -17,6 +21,12 @@ export class MovieService {
     private readonly genreRepository: EntityRepository<Genre>,
     @InjectRepository(MovieGenre)
     private readonly movieGenreRepository: EntityRepository<MovieGenre>,
+    @InjectRepository(Person)
+    private readonly personRepository: EntityRepository<Person>,
+    @InjectRepository(MovieDirector)
+    private readonly movieDirectorRepository: EntityRepository<MovieDirector>,
+    @InjectRepository(MovieCast)
+    private readonly movieCastRepository: EntityRepository<MovieCast>,
   ) {}
 
   async findAll(query: any = {}) {
@@ -60,7 +70,7 @@ export class MovieService {
   }
 
   async create(dto: CreateMovieDto) {
-    const { genreIds, ...rest } = dto;
+    const { genreIds, directorNames, cast, ...rest } = dto;
     const movie = this.movieRepository.create({
       ...rest,
       releaseDate: new Date(dto.releaseDate),
@@ -77,13 +87,45 @@ export class MovieService {
       }
     }
 
+    if (directorNames?.length) {
+      for (const name of directorNames) {
+        const person = await this.findOrCreatePerson(name);
+        const movieDirector = this.movieDirectorRepository.create({
+          movie,
+          director: person,
+        });
+        movie.directors.add(movieDirector);
+      }
+    }
+
+    if (cast?.length) {
+      for (const actor of cast) {
+        const person = await this.findOrCreatePerson(actor.name);
+        const movieCast = this.movieCastRepository.create({
+          movie,
+          person,
+          roleName: actor.role,
+        });
+        movie.cast.add(movieCast);
+      }
+    }
+
     await this.movieRepository.getEntityManager().persistAndFlush(movie);
     return wrap(movie).toObject();
   }
 
+  private async findOrCreatePerson(name: string): Promise<Person> {
+    let person = await this.personRepository.findOne({ name });
+    if (!person) {
+      person = this.personRepository.create({ name });
+      await this.personRepository.getEntityManager().persistAndFlush(person);
+    }
+    return person;
+  }
+
   async update(id: string, dto: UpdateMovieDto) {
     const movie = await this.findOneEntity(id);
-    const { genreIds, ...rest } = dto;
+    const { genreIds, directorNames, cast, ...rest } = dto;
 
     wrap(movie).assign({
       ...rest,
@@ -91,11 +133,8 @@ export class MovieService {
     } as any);
 
     if (genreIds !== undefined) {
-      // Clear existing genres
       await this.movieGenreRepository.nativeDelete({ movie: movie.id });
       movie.movieGenres.removeAll();
-
-      // Add new genres
       for (const genreId of genreIds) {
         const genre = await this.genreRepository.findOneOrFail(genreId);
         const movieGenre = this.movieGenreRepository.create({
@@ -103,6 +142,33 @@ export class MovieService {
           genre,
         });
         movie.movieGenres.add(movieGenre);
+      }
+    }
+
+    if (directorNames !== undefined) {
+      await this.movieDirectorRepository.nativeDelete({ movie: movie.id });
+      movie.directors.removeAll();
+      for (const name of directorNames) {
+        const person = await this.findOrCreatePerson(name);
+        const movieDirector = this.movieDirectorRepository.create({
+          movie,
+          director: person,
+        });
+        movie.directors.add(movieDirector);
+      }
+    }
+
+    if (cast !== undefined) {
+      await this.movieCastRepository.nativeDelete({ movie: movie.id });
+      movie.cast.removeAll();
+      for (const actor of cast) {
+        const person = await this.findOrCreatePerson(actor.name);
+        const movieCast = this.movieCastRepository.create({
+          movie,
+          person,
+          roleName: actor.role,
+        });
+        movie.cast.add(movieCast);
       }
     }
 

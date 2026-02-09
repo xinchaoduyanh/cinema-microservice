@@ -6,7 +6,9 @@ import {
   IsArray,
   Min,
   IsUrl,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { AgeRating, MovieStatus } from '../../../data-access/movie/movie.entity';
 
 export class CreateMovieDto {
@@ -61,4 +63,23 @@ export class CreateMovieDto {
   @IsString({ each: true })
   @IsOptional()
   genreIds?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  directorNames?: string[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CastDto)
+  @IsOptional()
+  cast?: CastDto[];
+}
+
+export class CastDto {
+  @IsString()
+  name: string;
+
+  @IsString()
+  role: string;
 }

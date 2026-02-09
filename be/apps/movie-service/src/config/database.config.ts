@@ -6,7 +6,20 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { registerAs } from '@nestjs/config';
 import { Movie, Genre, Person, MovieGenre, MovieDirector, MovieCast } from '../data-access/all.entity';
 
-dotenv.config({ path: '/work/.env' });
+const envPath = path.resolve(__dirname, '../../../../.env');
+const envPathCwd = path.resolve(process.cwd(), '../../.env');
+console.log('[DEBUG-MOVIE] Loading .env from:', { envPath, envPathCwd, cwd: process.cwd() });
+
+if (require('fs').existsSync(envPath)) {
+  console.log('[DEBUG-MOVIE] Found .env at envPath');
+  dotenv.config({ path: envPath });
+} else if (require('fs').existsSync(envPathCwd)) {
+  console.log('[DEBUG-MOVIE] Found .env at envPathCwd');
+  dotenv.config({ path: envPathCwd });
+} else {
+  console.log('[DEBUG-MOVIE] Fallback to /work/.env');
+  dotenv.config({ path: '/work/.env' });
+}
 
 export const databaseConfig = {
   driver: PostgreSqlDriver,

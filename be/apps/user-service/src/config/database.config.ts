@@ -5,7 +5,20 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { registerAs } from '@nestjs/config';
 import * as entities from '../data-access/all.entity';
 
-dotenv.config({ path: '/work/.env' });
+const envPath = path.resolve(__dirname, '../../../../.env');
+const envPathCwd = path.resolve(process.cwd(), '../../.env');
+console.log('[DEBUG] Loading .env from:', { envPath, envPathCwd, cwd: process.cwd() });
+
+if (require('fs').existsSync(envPath)) {
+  console.log('[DEBUG] Found .env at envPath');
+  dotenv.config({ path: envPath });
+} else if (require('fs').existsSync(envPathCwd)) {
+  console.log('[DEBUG] Found .env at envPathCwd');
+  dotenv.config({ path: envPathCwd });
+} else {
+  console.log('[DEBUG] Fallback to /work/.env');
+  dotenv.config({ path: '/work/.env' });
+}
 
 console.log('DB Host:', process.env.USER_SERVICE_DB_HOST);
 console.log('DB SSL:', process.env.USER_SERVICE_DB_SSL);
