@@ -147,14 +147,14 @@ export function Hero() {
               className="px-10 py-5 bg-white text-black rounded-full font-bold flex items-center gap-3 hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.3)]"
             >
               <Ticket className="w-5 h-5 fill-black" />
-              Đặt Vé Ngay
+              Book Now
             </Link>
             
             <Link
               href={`/movie/${activeMovie.id}`}
               className="flex items-center gap-2 text-white/60 hover:text-white transition-colors uppercase tracking-widest text-xs font-bold group"
             >
-              Xem Chi Tiết
+              View Details
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
