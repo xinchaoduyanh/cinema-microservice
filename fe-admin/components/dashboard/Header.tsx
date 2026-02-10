@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Bell, LogOut, Search, Shield } from "lucide-react"
+import { Bell, LogOut, Search, Shield, User } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -12,16 +12,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 
 export function Header() {
-  const router = useRouter()
+  const { user, logout } = useAuth()
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken")
-    localStorage.removeItem("refreshToken")
-    localStorage.removeItem("user")
-    router.push("/login")
+  const getUserInitials = () => {
+    if (!user?.fullName) return "AD"
+    const names = user.fullName.split(" ")
+    if (names.length >= 2) {
+      return (names[0][0] + names[names.length - 1][0]).toUpperCase()
+    }
+    return user.fullName.substring(0, 2).toUpperCase()
   }
 
   return (
@@ -54,17 +56,25 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger className="outline-none">
             <Avatar className="h-9 w-9 border-2 border-white/10 hover:border-white/30 transition-all duration-300 cursor-pointer hover:scale-105">
-              <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-bold">AD</AvatarFallback>
+              <AvatarImage src={user?.avatar} alt={user?.fullName || "Admin"} />
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-bold">
+                {getUserInitials()}
+              </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 bg-black/90 backdrop-blur-xl border-white/10 text-gray-200">
-            <DropdownMenuLabel className="text-white">My Account</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-white">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium">{user?.fullName || "Admin"}</p>
+                <p className="text-xs text-gray-400 font-normal">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-lg">
+              <User className="mr-2 h-4 w-4" />
               Profile Settings
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer hover:bg-white/5 focus:bg-white/5 text-red-400 focus:text-red-400 rounded-lg" onClick={handleLogout}>
+            <DropdownMenuItem className="cursor-pointer hover:bg-white/5 focus:bg-white/5 text-red-400 focus:text-red-400 rounded-lg" onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>

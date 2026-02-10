@@ -2,21 +2,26 @@
 "use client";
 
 import React from "react";
-import { Home, Search, Ticket, User } from "lucide-react";
+import { Home, Search, Ticket, User, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
-const NAV_ITEMS = [
+const PUBLIC_NAV_ITEMS = [
   { icon: Home, label: "Home", href: "/" },
   { icon: Search, label: "Search", href: "/search" },
   { icon: Ticket, label: "Tickets", href: "/tickets" },
-  { icon: User, label: "Profile", href: "/profile" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const navItems = isAuthenticated
+    ? [...PUBLIC_NAV_ITEMS, { icon: User, label: "Profile", href: "/profile" }]
+    : PUBLIC_NAV_ITEMS;
 
   return (
     <>
@@ -26,7 +31,7 @@ export function Navbar() {
           AESTHETIX<span className="text-white/40">CINEMAS</span>
         </Link>
         <nav className="flex items-center gap-8">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -38,13 +43,29 @@ export function Navbar() {
               {item.label}
             </Link>
           ))}
+          {isAuthenticated ? (
+            <button
+              onClick={logout}
+              className="text-sm uppercase tracking-widest text-white/50 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm uppercase tracking-widest text-white/50 hover:text-white transition-colors"
+            >
+              Login
+            </Link>
+          )}
         </nav>
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
       <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md">
         <div className="glass rounded-full px-6 py-4 flex items-center justify-between shadow-2xl">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -69,3 +90,4 @@ export function Navbar() {
     </>
   );
 }
+

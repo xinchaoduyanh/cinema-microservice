@@ -7,6 +7,6 @@
 **/.env
 **/.idea
 **/.pnpm-store
-
+.env.docker
 /tmp
 **/*.d.ts

@@ -4,9 +4,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Lock, Mail, ShieldCheck, AlertCircle } from "lucide-react"
-import api from "@/lib/axios"
+import { Lock, Mail, ShieldCheck, Eye, EyeOff, ArrowRight } from "lucide-react"
+import { authService } from "@/services/auth.service"
+import { useAuth } from "@/lib/auth-context"
 import { jwtDecode } from "jwt-decode"
+import { motion } from "framer-motion"
 
 interface JwtPayload {
   role?: string;
@@ -17,10 +19,12 @@ interface JwtPayload {
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,32 +34,29 @@ export default function AdminLoginPage() {
     setError(null)
 
     try {
-      // Call Auth Service via APISIX Gateway
-      const response = await api.post('/auth-service/api/auth/login', formData)
+      const response = await authService.login(formData)
       
-      const { accessToken, refreshToken, email } = response.data
+      const { accessToken, refreshToken } = response
 
       if (accessToken) {
         // Decode token to check role
         const decoded = jwtDecode<JwtPayload>(accessToken)
         
-        if (decoded.role === 'ADMIN') {
-          // Store tokens
-          localStorage.setItem('accessToken', accessToken)
-          if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
-          if (email) localStorage.setItem('userEmail', email)
+        if (decoded.role === 'ADMIN' || decoded.role === 'SUPER_ADMIN') {
+          // Use Auth Context to login
+          await login(accessToken, refreshToken)
           
           // Redirect to Admin Dashboard
           router.push('/')
         } else {
-          setError("Access Denied: You do not have administrator privileges.")
+          setError("Access Denied: Administrator privileges required.")
         }
       } else {
-        setError("Login failed: No access token received.")
+        setError("Authentication failed. Please try again.")
       }
     } catch (err: any) {
       console.error("Login error:", err)
-      const msg = err.response?.data?.message || "Invalid credentials or server error."
+      const msg = err.response?.data?.message || "Invalid credentials. Please check your email and password."
       setError(Array.isArray(msg) ? msg[0] : msg)
     } finally {
       setLoading(false)
@@ -68,96 +69,178 @@ export default function AdminLoginPage() {
       <div className="bg-aura" />
       <div className="film-grain" />
       
-      {/* Gradient Orbs */}
+      {/* Animated Gradient Orbs */}
       <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       
-      <div className="w-full max-w-md relative z-10">
-        
-        {/* Header */}
-        <div className="flex flex-col items-center justify-center gap-3 mb-10">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl shadow-blue-500/30">
-            <ShieldCheck className="h-12 w-12 text-white" />
+      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center relative z-10">
+        {/* Left Side - Branding */}
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden md:flex flex-col justify-center space-y-8"
+        >
+          {/* Logo */}
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl shadow-blue-500/30">
+              <ShieldCheck className="h-12 w-12 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white tracking-tight">
+                Cinema<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Admin</span>
+              </h1>
+              <p className="text-white/60 text-sm">Management Portal</p>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">Cinema Admin</h1>
-          <p className="text-gray-400 text-center">Management Portal</p>
-        </div>
 
-        {/* Login Card */}
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-white/10">
-          <div className="space-y-2 mb-8">
-            <h2 className="text-2xl font-bold text-white">Secure Login</h2>
-            <p className="text-gray-400 text-sm">
-              Enter your admin credentials to continue
+          {/* Description */}
+          <div className="space-y-4">
+            <h2 className="text-5xl font-bold text-white leading-tight">
+              Secure Access
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                Control Center
+              </span>
+            </h2>
+            <p className="text-xl text-white/60 max-w-md">
+              Manage your cinema operations, monitor bookings, and control content from a unified dashboard.
             </p>
           </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex items-center gap-3 animate-slide-up">
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
 
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-gray-300 block">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@cinema.com"
-                  className="pl-12 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-white/20 rounded-xl text-white placeholder:text-gray-500 transition-all duration-300"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  disabled={loading}
-                />
+          {/* Features */}
+          <div className="space-y-3">
+            {[
+              "Real-time Analytics",
+              "Content Management",
+              "User Administration",
+              "Booking Oversight"
+            ].map((feature, index) => (
+              <motion.div
+                key={feature}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400" />
+                <span className="text-white/70">{feature}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Right Side - Login Form */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <div className="glass rounded-3xl p-8 md:p-10 shadow-2xl border border-white/10">
+            {/* Mobile Logo */}
+            <div className="md:hidden flex flex-col items-center mb-8">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl shadow-blue-500/30 mb-3">
+                <ShieldCheck className="h-10 w-10 text-white" />
               </div>
+              <h1 className="text-2xl font-bold text-white">Cinema Admin</h1>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-gray-300 block">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  className="pl-12 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-white/20 rounded-xl text-white placeholder:text-gray-500 transition-all duration-300"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                  disabled={loading}
-                />
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold text-white">Administrator Login</h2>
+                <p className="text-white/60">Secure access for authorized personnel only</p>
               </div>
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300 hover:scale-[1.02]" 
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Authenticating...
-                </div>
-              ) : (
-                "Sign In to Dashboard"
+              
+              {/* Error Alert */}
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+                >
+                  <p className="text-red-400 text-sm">{error}</p>
+                </motion.div>
               )}
-            </Button>
-          </form>
-          
-          <p className="text-xs text-center text-gray-500 mt-6">
-            Protected area. Unauthorized access is prohibited.
-          </p>
-        </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email */}
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium text-white/80 block">
+                    Email Address
+                  </label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="admin@cinema.com"
+                      className="pl-12 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 rounded-xl text-white placeholder:text-white/30 transition-all"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium text-white/80 block">
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-12 pr-12 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 rounded-xl text-white placeholder:text-white/30 transition-all"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all group" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Authenticating...
+                    </div>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      Access Dashboard
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  )}
+                </Button>
+              </form>
+              
+              {/* Security Notice */}
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-xs text-center text-white/40">
+                  🔒 Protected area. All access attempts are logged and monitored.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

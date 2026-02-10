@@ -40,6 +40,12 @@ help:
 	@echo "  Testing:"
 	@echo "    make test         - Run tests"
 	@echo "    make test-watch   - Run tests in watch mode"
+	@echo ""
+	@echo "  Documentation:"
+	@echo "    Swagger Auth      - http://localhost:3300/swagger"
+	@echo "    Swagger User      - http://localhost:3301/swagger"
+	@echo "    Swagger Movie     - http://localhost:3302/swagger"
+	@echo ""
 
 # ============================================
 # Development Commands
@@ -92,7 +98,9 @@ logs-kafka:
 # Stop all services
 stop:
 	@echo "🛑 Stopping all services..."
-	docker-compose -f docker-compose.dev.yml down
+	@docker-compose -f docker-compose.dev.yml down
+	@echo "🧹 Killing lingering local Node.js processes..."
+	@pkill -f "node" || true
 	@echo "✅ All services stopped!"
 
 # Restart all services
@@ -176,7 +184,8 @@ check-env:
 # Health check
 health:
 	@echo "🏥 Checking service health..."
-	@curl -s http://localhost:3300/api/health || echo "❌ Auth service not responding"
-	@curl -s http://localhost:3301/api/health || echo "❌ User service not responding"
-	@curl -s http://localhost:3302/api/health || echo "❌ Movie service not responding"
+	@curl -s -I http://localhost:3300/api | grep -q "200 OK" && echo "✅ Auth service (3300) is UP" || echo "❌ Auth service (3300) is DOWN"
+	@curl -s -I http://localhost:3301/api | grep -q "200 OK" && echo "✅ User service (3301) is UP" || echo "❌ User service (3301) is DOWN"
+	@curl -s -I http://localhost:3302/api | grep -q "200 OK" && echo "✅ Movie service (3302) is UP" || echo "❌ Movie service (3302) is DOWN"
+	@curl -s -I http://localhost:3303/api | grep -q "200 OK" && echo "✅ Notification service (3303) is UP" || echo "❌ Notification service (3303) is DOWN"
 	@echo "✅ Health check complete!"

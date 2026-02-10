@@ -130,12 +130,13 @@ export class UserService {
   }
 
   async getUserInfo(userPayload: UserRequestPayload) {
-    const { id, email, role, emailVerified } = userPayload;
-    return {
-      id,
-      email,
-      role,
-      emailVerified,
-    };
+    const user = await this.userRepo.findOne({ id: userPayload.id });
+    
+    if (!user) {
+      throw new ServerException(ERROR_RESPONSE.USER_NOT_FOUND);
+    }
+
+    return plainToInstance(GetUserResponseDto, user, { enableImplicitConversion: true });
   }
+
 }
