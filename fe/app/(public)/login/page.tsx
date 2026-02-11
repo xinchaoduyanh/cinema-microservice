@@ -4,11 +4,13 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronRight } from "lucide-react"
 import { authService, LoginParams } from "@/services/auth.service"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -40,165 +42,183 @@ export default function LoginPage() {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.2
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+    }
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-20 relative overflow-hidden">
-      {/* Animated Background Gradients */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+    <div className="h-screen grid lg:grid-cols-2 bg-background relative overflow-hidden">
+      {/* Light Projection Beam Effect - Circular Projector Lens Style */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] pointer-events-none z-30 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.05)_25%,transparent_70%)] opacity-80" />
+
+      {/* Dust motes/Film grain overlay for the beam */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] pointer-events-none z-30 film-grain opacity-[0.03]" />
+
+      {/* Left Decoration - Cinematic Image / Branding */}
+      <div className="hidden lg:block relative overflow-hidden border-r border-white/5 h-full">
+        <div className="absolute inset-0 bg-black/40 z-10" />
+        <motion.img
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.6 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=2059"
+          alt="Cinema"
+          className="absolute inset-0 w-full h-full object-cover grayscale-[40%]"
+        />
+        <div className="absolute inset-x-0 bottom-0 p-16 z-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            <span className="text-white/40 uppercase tracking-[0.4em] text-[10px] font-bold block mb-3">The Art of Cinema</span>
+            <h1 className="text-6xl font-serif font-bold tracking-tighter uppercase leading-[0.9] text-white">
+              Aesthetix<br />Experiences
+            </h1>
+          </motion.div>
+        </div>
       </div>
 
-      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Hero Section */}
-        <motion.div 
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="hidden md:block space-y-8"
-        >
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-white/80">Welcome Back</span>
-            </div>
-            <h1 className="text-6xl font-serif font-bold text-white leading-tight">
-              Your Cinema
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                Experience
-              </span>
-              <br />
-              Awaits
-            </h1>
-            <p className="text-xl text-white/60 max-w-md">
-              Sign in to access exclusive screenings, book premium seats, and enjoy personalized recommendations.
-            </p>
-          </div>
+      {/* Right Side - Login Form */}
+      <div className="flex items-center justify-center p-6 md:p-10 lg:p-16 relative z-20 h-full overflow-hidden">
+        {/* Cinema Seats Background behind form - More visible as requested */}
+        <div className="absolute inset-0 z-0 opacity-[0.12] pointer-events-none overflow-hidden bg-black">
+          <img
+            src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=2070"
+            alt="Cinema Seats"
+            className="w-full h-full object-cover grayscale brightness-50"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        </div>
 
-          {/* Feature Pills */}
-          <div className="flex flex-wrap gap-3">
-            {["Premium Seats", "Early Access", "Exclusive Deals"].map((feature) => (
-              <div key={feature} className="glass px-4 py-2 rounded-full">
-                <span className="text-sm text-white/70">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Right Side - Login Form */}
         <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full max-w-md space-y-8 relative z-10"
         >
-          <div className="glass rounded-3xl p-8 md:p-10 shadow-2xl border border-white/10">
-            <div className="space-y-6">
-              {/* Header */}
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-white">Sign In</h2>
-                <p className="text-white/60">Enter your credentials to continue</p>
-              </div>
+          {/* Header */}
+          <motion.div variants={itemVariants} className="space-y-2">
+            <span className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold block">Access Your Account</span>
+            <h2 className="text-4xl font-serif font-bold tracking-tighter uppercase text-white">Sign In</h2>
+          </motion.div>
 
-              {/* Error Message */}
+          <div className="space-y-5">
+            {/* Google Login */}
+            <motion.div variants={itemVariants}>
+              <GoogleLoginButton label="Continue with Google" />
+            </motion.div>
+
+            {/* Divider */}
+            <motion.div variants={itemVariants} className="flex items-center gap-4">
+              <div className="h-px w-full bg-white/10" />
+              <span className="text-[10px] uppercase tracking-widest text-white/30 font-bold whitespace-nowrap">or use email</span>
+              <div className="h-px w-full bg-white/10" />
+            </motion.div>
+
+            {/* Main Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
+                  className="p-3 bg-red-500/5 border border-red-500/20 text-red-500/80 text-[10px] rounded-lg"
                 >
-                  <p className="text-red-400 text-sm">{error}</p>
+                  {error}
                 </motion.div>
               )}
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white/80">Email Address</label>
-                  <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      className="pl-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/10 focus:border-blue-500/50 rounded-xl transition-all"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
-                    />
-                  </div>
+              <motion.div variants={itemVariants} className="space-y-1">
+                <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 ml-1">Email Address</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-white transition-colors" />
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="pl-12 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:bg-white/10 focus:border-white/30 rounded-xl transition-all text-xs"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
                 </div>
+              </motion.div>
 
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-white/80">Password</label>
-                    <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
-                      Forgot Password?
-                    </Link>
-                  </div>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pl-12 pr-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/10 focus:border-blue-500/50 rounded-xl transition-all"
-                      value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
+              <motion.div variants={itemVariants} className="space-y-1">
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40">Password</label>
+                  <Link href="/forgot-password" title="Forgot password?" className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors font-bold">
+                    Forgot?
+                  </Link>
                 </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-white transition-colors" />
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter password"
+                    className="pl-12 pr-12 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:bg-white/10 focus:border-white/30 rounded-xl transition-all text-xs"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </motion.div>
 
-                {/* Submit Button */}
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all group" 
+              <motion.div variants={itemVariants}>
+                <Button
+                  type="submit"
+                  className="w-full h-11 bg-white text-black hover:bg-white/90 font-bold uppercase tracking-widest text-[10px] rounded-full shadow-lg shadow-white/5 transition-all group mt-1"
                   disabled={loading}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Signing In...
+                      <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                      Authenticating...
                     </div>
                   ) : (
                     <span className="flex items-center gap-2">
                       Sign In
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                   )}
                 </Button>
-              </form>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-black/50 px-3 text-white/40">New to AESTHETIX?</span>
-                </div>
-              </div>
-
-              {/* Sign Up Link */}
-              <div className="text-center">
-                <Link 
-                  href="/register" 
-                  className="text-sm text-white/60 hover:text-white transition-colors inline-flex items-center gap-2 group"
-                >
-                  Create an account
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </div>
+              </motion.div>
+            </form>
           </div>
+
+          {/* Footer Link */}
+          <motion.div variants={itemVariants} className="text-center pt-4 border-t border-white/5">
+            <span className="text-[10px] text-white/30 uppercase tracking-widest font-medium">New guest? </span>
+            <Link
+              href="/register"
+              className="text-[10px] text-white/80 hover:text-white transition-colors font-bold uppercase tracking-widest inline-flex items-center gap-1 group"
+            >
+              Create Account
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
         </motion.div>
       </div>
     </div>

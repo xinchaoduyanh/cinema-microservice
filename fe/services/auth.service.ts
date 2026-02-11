@@ -32,12 +32,11 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth-service/api/auth/sign-up', data);
     return response.data;
   },
-  
-  // This is a placeholder for Google OAuth if backend supported it
-  // loginWithGoogle: async (idToken: string) => {
-  //   const response = await api.post('/auth-service/api/auth/google', { token: idToken });
-  //   return response.data;
-  // },
+
+  loginWithGoogle: async (idToken: string) => {
+    const response = await api.post<AuthResponse>('/auth-service/api/auth/google', { token: idToken });
+    return response.data;
+  },
 
   logout: () => {
     localStorage.removeItem('accessToken');
