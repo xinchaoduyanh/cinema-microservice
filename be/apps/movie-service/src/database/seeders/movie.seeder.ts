@@ -7,7 +7,7 @@ import { MovieGenre } from '../../data-access/movie-genre/movie-genre.entity';
 import { MovieDirector } from '../../data-access/movie-director/movie-director.entity';
 import { MovieCast } from '../../data-access/movie-cast/movie-cast.entity';
 
-export class MovieSeeder extends Seeder {
+  export class MovieSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
     const genresData = [
       'Biography', 'Drama', 'History', 'Action', 'Adventure', 'Sci-Fi', 'Crime', 'Thriller'

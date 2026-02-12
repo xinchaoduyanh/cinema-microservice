@@ -17,7 +17,7 @@
     "migration:up": "turbo run migration:up --parallel",
     "lint": "turbo run lint",
     "prepare": "husky",
-    "format": "prettier --write \"apps/**/src/**/*.ts\" \"libs/**/src/**/*.ts\""
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\""
   },
   "engines": {
     "npm": ">=10.0.0",

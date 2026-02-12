@@ -30,11 +30,11 @@ export function Header() {
     <header className="h-16 border-b border-white/5 bg-black/60 backdrop-blur-xl fixed top-0 w-full z-30 px-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/20 shadow-lg group-hover:bg-white/20 transition-all duration-300 group-hover:scale-105">
             <Shield className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-white hidden md:block tracking-tight">
-            Cinema<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Admin</span>
+          <span className="text-lg font-bold text-white hidden md:block tracking-tight font-serif uppercase">
+            AESTHE<span className="text-primary font-serif italic">TIX</span> <span className="text-xs font-sans tracking-[0.2em] opacity-50 ml-1">ADMIN</span>
           </span>
         </Link>
       </div>
@@ -57,7 +57,7 @@ export function Header() {
           <DropdownMenuTrigger className="outline-none">
             <Avatar className="h-9 w-9 border-2 border-white/10 hover:border-white/30 transition-all duration-300 cursor-pointer hover:scale-105">
               <AvatarImage src={user?.avatar} alt={user?.fullName || "Admin"} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-bold">
+              <AvatarFallback className="bg-white text-black text-xs font-bold">
                 {getUserInitials()}
               </AvatarFallback>
             </Avatar>

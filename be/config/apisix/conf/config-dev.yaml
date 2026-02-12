@@ -20,5 +20,5 @@ deployment:
   etcd:
     host:
       - ${{ETCD_URL:=http://etcd:2379}}
-    prefix: "/apisix"
+    prefix: '/apisix'
     timeout: 30

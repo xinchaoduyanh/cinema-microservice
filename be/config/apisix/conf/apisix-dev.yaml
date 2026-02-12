@@ -18,7 +18,7 @@ global_rules:
       disable: false
     allow_origins: '*'
     allow_methods: '*'
-plugin_metadata: { }
+plugin_metadata: {}
 services:
   - name: Home
     plugins:
@@ -147,7 +147,7 @@ services:
         size: 320
       name: auth-upstream
       nodes:
-        - host: ${APISIX_AUTH_SERVICE_HOST}
+        - host: 172.17.0.1
           port: ${APISIX_AUTH_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -246,7 +246,7 @@ services:
         size: 320
       name: user-upstream
       nodes:
-        - host: ${APISIX_USER_SERVICE_HOST}
+        - host: 172.17.0.1
           port: ${APISIX_USER_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -345,7 +345,7 @@ services:
         size: 320
       name: notification-upstream
       nodes:
-        - host: ${APISIX_NOTIFICATION_SERVICE_HOST}
+        - host: 172.17.0.1
           port: ${APISIX_NOTIFICATION_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -376,9 +376,11 @@ services:
               - /$1
         priority: 1
         uris:
+          - /movie-service/api
           - /movie-service/api/movies
           - /movie-service/api/movies/*
           - /movie-service/api/genres
+          - /movie-service/api/persons
           - /movie-service/swagger
           - /movie-service/swagger/*
       - methods:
@@ -432,7 +434,7 @@ services:
         size: 320
       name: movie-upstream
       nodes:
-        - host: ${APISIX_MOVIE_SERVICE_HOST}
+        - host: 172.17.0.1
           port: ${APISIX_MOVIE_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -770,6 +772,4 @@ services:
         read: 6
         send: 6
       type: roundrobin
-ssls: [ ]
-
-
+ssls: []

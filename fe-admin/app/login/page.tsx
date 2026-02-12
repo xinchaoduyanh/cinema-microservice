@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Lock, Mail, ShieldCheck, Eye, EyeOff, ArrowRight } from "lucide-react"
+import { Lock, Mail, ShieldCheck, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react"
 import { authService } from "@/services/auth.service"
 import { useAuth } from "@/lib/auth-context"
 import { jwtDecode } from "jwt-decode"
@@ -35,19 +35,13 @@ export default function AdminLoginPage() {
 
     try {
       const response = await authService.login(formData)
-      
       const { accessToken, refreshToken } = response
 
       if (accessToken) {
-        // Decode token to check role
         const decoded = jwtDecode<JwtPayload>(accessToken)
-        
         if (decoded.role === 'ADMIN' || decoded.role === 'SUPER_ADMIN') {
-          // Use Auth Context to login
           await login(accessToken, refreshToken)
-          
-          // Redirect to Admin Dashboard
-          router.push('/')
+          router.push('/dashboard')
         } else {
           setError("Access Denied: Administrator privileges required.")
         }
@@ -64,184 +58,178 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black relative overflow-hidden p-4">
-      {/* Atmospheric Background Effects */}
-      <div className="bg-aura" />
-      <div className="film-grain" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#050505]">
+      {/* Cinematic Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 z-0 scale-105 animate-slow-zoom"
+        style={{ 
+          backgroundImage: `url('/admin_login_bg.png')`, // Note: Image added via generate_image usually needs public moving if Next.js
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'brightness(0.4) saturate(0.8)'
+        }}
+      />
       
-      {/* Animated Gradient Orbs */}
-      <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      
-      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center relative z-10">
-        {/* Left Side - Branding */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="hidden md:flex flex-col justify-center space-y-8"
-        >
-          {/* Logo */}
-          <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl shadow-blue-500/30">
-              <ShieldCheck className="h-12 w-12 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-white tracking-tight">
-                Cinema<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Admin</span>
-              </h1>
-              <p className="text-white/60 text-sm">Management Portal</p>
-            </div>
-          </div>
+      {/* Artistic Overlay Gradients */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-tr from-black via-black/40 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,_transparent_0%,_black_90%)] opacity-60" />
 
-          {/* Description */}
-          <div className="space-y-4">
-            <h2 className="text-5xl font-bold text-white leading-tight">
-              Secure Access
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                Control Center
-              </span>
-            </h2>
-            <p className="text-xl text-white/60 max-w-md">
-              Manage your cinema operations, monitor bookings, and control content from a unified dashboard.
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-16 items-center relative z-20 px-6">
+        {/* Left Side: Cinematic Branding */}
+        <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8 }}
+           className="hidden lg:block space-y-12"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-1 w-12 bg-primary" />
+              <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Aesthetix Cinema Group</span>
+            </div>
+            <h1 className="text-7xl font-black text-white tracking-tighter leading-[0.9] font-serif uppercase">
+              AESTHETIX<br />
+              <span className="text-primary italic">ADMIN</span>
+            </h1>
+            <p className="text-xl text-white/50 max-w-md font-medium leading-relaxed">
+              Modern cinema operations management system. Experience sophistication in every control operation.
             </p>
           </div>
 
-          {/* Features */}
-          <div className="space-y-3">
-            {[
-              "Real-time Analytics",
-              "Content Management",
-              "User Administration",
-              "Booking Oversight"
-            ].map((feature, index) => (
-              <motion.div
-                key={feature}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 + index * 0.1 }}
-                className="flex items-center gap-3"
-              >
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400" />
-                <span className="text-white/70">{feature}</span>
-              </motion.div>
-            ))}
+          <div className="flex items-center gap-8">
+             <div className="space-y-1">
+                <p className="text-2xl font-bold text-white">24/7</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest">Operation</p>
+             </div>
+             <div className="h-10 w-[1px] bg-white/10" />
+             <div className="space-y-1">
+                <p className="text-2xl font-bold text-white">Safe</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest">Encryption</p>
+             </div>
+             <div className="h-10 w-[1px] bg-white/10" />
+             <div className="space-y-1">
+                <p className="text-2xl font-bold text-white">Global</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest">Standards</p>
+             </div>
           </div>
         </motion.div>
 
-        {/* Right Side - Login Form */}
+        {/* Right Side: Glassmorphism Login Form */}
         <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="w-full max-w-md mx-auto"
         >
-          <div className="glass rounded-3xl p-8 md:p-10 shadow-2xl border border-white/10">
-            {/* Mobile Logo */}
-            <div className="md:hidden flex flex-col items-center mb-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl shadow-blue-500/30 mb-3">
-                <ShieldCheck className="h-10 w-10 text-white" />
+          <div className="glass-card p-10 md:p-12 relative overflow-hidden group">
+            {/* Subtle inner glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
+            
+            <div className="relative z-10 space-y-8">
+              <div className="text-center space-y-2">
+                 <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
+                    <ShieldCheck className="h-8 w-8 text-primary" />
+                 </div>
+                 <h2 className="text-3xl font-bold text-white tracking-tight font-serif uppercase">Admin Authentication</h2>
+                 <p className="text-white/40 text-sm font-medium">Please enter your credentials to access</p>
               </div>
-              <h1 className="text-2xl font-bold text-white">Cinema Admin</h1>
-            </div>
 
-            <div className="space-y-6">
-              {/* Header */}
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-white">Administrator Login</h2>
-                <p className="text-white/60">Secure access for authorized personnel only</p>
-              </div>
-              
-              {/* Error Alert */}
               {error && (
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+                  className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold text-center"
                 >
-                  <p className="text-red-400 text-sm">{error}</p>
+                  {error}
                 </motion.div>
               )}
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email */}
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-white/80 block">
-                    Email Address
-                  </label>
-                  <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2 group">
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-primary transition-colors" />
                     <Input
-                      id="email"
                       type="email"
-                      placeholder="admin@cinema.com"
-                      className="pl-12 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 rounded-xl text-white placeholder:text-white/30 transition-all"
+                      placeholder="Admin Email"
+                      className="pl-12 h-14 bg-white/[0.03] border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-2xl text-white transition-all font-medium"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
-                      disabled={loading}
                     />
                   </div>
                 </div>
 
-                {/* Password */}
-                <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-white/80 block">
-                    Password
-                  </label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
+                <div className="space-y-2 group">
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-primary transition-colors" />
                     <Input
-                      id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pl-12 pr-12 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 rounded-xl text-white placeholder:text-white/30 transition-all"
+                      placeholder="Password"
+                      className="pl-12 pr-12 h-14 bg-white/[0.03] border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-2xl text-white transition-all font-medium"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required
-                      disabled={loading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all group" 
+                  className="w-full h-14 bg-primary text-black font-black uppercase tracking-widest rounded-2xl cinematic-glow hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50" 
                   disabled={loading}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Authenticating...
+                      <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                      Processing...
                     </div>
                   ) : (
                     <span className="flex items-center gap-2">
-                      Access Dashboard
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                       Enter System
+                      <ArrowRight className="w-5 h-5" />
                     </span>
                   )}
                 </Button>
               </form>
-              
-              {/* Security Notice */}
-              <div className="pt-4 border-t border-white/10">
-                <p className="text-xs text-center text-white/40">
-                  🔒 Protected area. All access attempts are logged and monitored.
-                </p>
+
+              <div className="text-center pt-4">
+                 <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">
+                    Copyright © 2026 European Cinema Pro
+                 </p>
               </div>
             </div>
           </div>
         </motion.div>
       </div>
+      
+      {/* Decorative scanline effect */}
+      <div className="absolute inset-0 z-30 pointer-events-none opacity-[0.03] overflow-hidden">
+         <div className="w-full h-1 bg-white animate-scanline" />
+      </div>
+
+      <style jsx global>{`
+        @keyframes slow-zoom {
+          from { transform: scale(1); }
+          to { transform: scale(1.1); }
+        }
+        .animate-slow-zoom {
+          animation: slow-zoom 20s infinite alternate ease-in-out;
+        }
+        @keyframes scanline {
+          from { transform: translateY(-100%); }
+          to { transform: translateY(100vh); }
+        }
+        .animate-scanline {
+          animation: scanline 8s linear infinite;
+        }
+      `}</style>
     </div>
   )
 }

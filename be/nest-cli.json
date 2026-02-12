@@ -8,6 +8,40 @@
       "compilerOptions": {
         "outputPath": "dist"
       }
+    },
+    {
+      "type": "application",
+      "root": "apps/cinema-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/cinema-service/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
+    },
+    {
+      "type": "application",
+      "root": "apps/booking-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/booking-service/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
+    },
+    {
+      "type": "application",
+      "root": "apps/payment-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/payment-service/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
     }
-  ]
+  ],
+  "monorepo": true,
+  "root": "apps/nest-turbo-starter",
+  "sourceRoot": "apps/nest-turbo-starter/src",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/nest-turbo-starter/tsconfig.app.json"
+  }
 }
