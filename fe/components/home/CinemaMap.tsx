@@ -4,15 +4,34 @@
 import React, { useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Cinema } from "@/services/cinema.service";
 
-const LOCATIONS = [
-  { id: 1, name: "The Grand Atrium", address: "Milan, District 1", coords: { x: "30%", y: "40%" } },
-  { id: 2, name: "Nordic Screen", address: "Stockholm, Södermalm", coords: { x: "60%", y: "30%" } },
-  { id: 3, name: "Parisian Vault", address: "Paris, Le Marais", coords: { x: "45%", y: "65%" } },
-];
+interface CinemaMapProps {
+  cinemas: Cinema[];
+}
 
-export function CinemaMap() {
-  const [selected, setSelected] = useState(LOCATIONS[0]);
+export function CinemaMap({ cinemas }: CinemaMapProps) {
+  // Map real cinemas to inclusion of abstract coords for the UI visualization
+  const locations = cinemas.map((c, idx) => ({
+    ...c,
+    // Just for visualization on the abstract grid, we simulate X/Y based on index or logic
+    coords: { 
+        x: `${20 + (idx * 25) % 60}%`, 
+        y: `${30 + (idx * 15) % 50}%` 
+    }
+  }));
+
+  const [selected, setSelected] = useState(locations[0] || null);
+
+  if (!selected) return null;
+
+  const handleGetDirections = () => {
+    if (selected.latitude && selected.longitude) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${selected.latitude},${selected.longitude}`, '_blank');
+    } else {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selected.address)}`, '_blank');
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row gap-12 items-center">
@@ -21,7 +40,7 @@ export function CinemaMap() {
         <div className="absolute inset-0 opacity-10" 
              style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         
-        {LOCATIONS.map((loc) => (
+        {locations.map((loc) => (
           <button
             key={loc.id}
             className={cn(
@@ -45,7 +64,10 @@ export function CinemaMap() {
           </div>
           <h4 className="font-serif text-xl font-bold">{selected.name}</h4>
           <p className="text-white/40 text-sm mb-4">{selected.address}</p>
-          <button className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest hover:text-white transition-colors">
+          <button 
+            onClick={handleGetDirections}
+            className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest hover:text-white transition-colors"
+          >
             Get Directions <Navigation className="w-3 h-3" />
           </button>
         </div>
@@ -53,7 +75,7 @@ export function CinemaMap() {
 
       <div className="w-full md:w-80 flex flex-col gap-4">
         <h3 className="text-3xl font-serif font-bold mb-4 uppercase tracking-tighter">Our Houses</h3>
-        {LOCATIONS.map((loc) => (
+        {locations.map((loc) => (
           <button
             key={loc.id}
             onClick={() => setSelected(loc)}

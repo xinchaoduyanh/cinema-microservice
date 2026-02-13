@@ -12,7 +12,7 @@ const cliConfig = {
   },
   seeder: {
     path: path.join(__dirname, 'src/database/seeders'),
-    defaultSeeder: 'MovieSeeder',
+    defaultSeeder: 'ProductSeeder',
   },
   extensions: [Migrator],
 };

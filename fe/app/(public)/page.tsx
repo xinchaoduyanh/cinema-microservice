@@ -6,17 +6,23 @@ import { CinemaMap } from "@/components/home/CinemaMap";
 import { Combos } from "@/components/home/Combos";
 import { DirectorsEdit } from "@/components/home/DirectorsEdit";
 import { AtmosphericSound } from "@/components/home/AtmosphericSound";
-import { MOVIES } from "@/constants/movies";
+import { movieService } from "@/services/movie.service";
+import { cinemaService } from "@/services/cinema.service";
 import { ArrowRight } from "lucide-react";
 
-export default function HomePage() {
-  const nowPlaying = MOVIES.filter((m) => m.status === "now-playing").slice(0, 5);
-  const comingSoon = MOVIES.filter((m) => m.status === "coming-soon").slice(0, 5);
+export default async function HomePage() {
+  const [movies, cinemas] = await Promise.all([
+    movieService.getAll(),
+    cinemaService.getAll()
+  ]);
+
+  const nowPlaying = movies.filter((m) => m.status === "now-playing") as any[];
+  const comingSoon = movies.filter((m) => m.status === "coming-soon") as any[];
 
   return (
     <div className="flex flex-col gap-32 pb-32">
       {/* Hero Section */}
-      <Hero />
+      <Hero movies={nowPlaying} />
 
       {/* Now Playing Section */}
       <section className="px-6 md:px-12 max-w-[1600px] mx-auto w-full">
@@ -74,7 +80,7 @@ export default function HomePage() {
           <span className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold block mb-2">Our Network</span>
           <h2 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter uppercase">Cinema Locations</h2>
         </div>
-        <CinemaMap />
+        <CinemaMap cinemas={cinemas} />
       </section>
     </div>
   );

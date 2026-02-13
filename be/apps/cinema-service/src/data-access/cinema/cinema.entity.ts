@@ -19,6 +19,12 @@ export class Cinema extends BaseEntity<Cinema> {
   @Property({ nullable: true })
   imageUrl?: string;
 
+  @Property({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude?: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude?: number;
+
   @OneToMany(() => Room, (room) => room.cinema)
   rooms = new Collection<Room>(this);
 }

@@ -50,7 +50,7 @@ async function bootstrap() {
   // const msFactory = new MicroserviceFactory(configService); // Removed incorrect instantiation
 
   const kafkaConsumerConfig = MicroserviceFactory.createConfig({
-    serviceName: MicroserviceName.MovieService,
+    serviceName: MicroserviceName.CinemaService,
     transport: Transport.KAFKA,
   } as MicroserviceConfigOptions, configService);
   await app.connectMicroservice<MicroserviceOptions>(kafkaConsumerConfig);

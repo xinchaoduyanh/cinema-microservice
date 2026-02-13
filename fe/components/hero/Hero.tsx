@@ -8,11 +8,16 @@ import { MOVIES, Movie } from "@/constants/movies";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export function Hero() {
-  const nowPlayingMovies = MOVIES.filter(m => m.status === 'now-playing');
+interface HeroProps {
+  movies: Movie[];
+}
+
+export function Hero({ movies: nowPlayingMovies }: HeroProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+
+  if (!nowPlayingMovies || nowPlayingMovies.length === 0) return null;
 
   const activeMovie = nowPlayingMovies[activeIndex];
 
@@ -89,7 +94,7 @@ export function Hero() {
                   <iframe
                     src={`${activeMovie.previewVideoUrl?.includes('youtube') 
                       ? activeMovie.previewVideoUrl 
-                      : activeMovie.trailerUrl}&start=0&end=10&autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=${(activeMovie.previewVideoUrl || activeMovie.trailerUrl).split('/').pop()?.split('?')[0]}`}
+                      : activeMovie.trailerUrl}&start=0&end=10&autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=${(activeMovie.previewVideoUrl || activeMovie.trailerUrl || '').split('/').pop()?.split('?')[0]}`}
                     className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 object-cover scale-[1.1]"
                     allow="autoplay; encrypted-media"
                   />

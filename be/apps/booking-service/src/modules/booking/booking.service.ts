@@ -1,16 +1,18 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger, Inject, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { ClientKafka, Transport } from '@nestjs/microservices';
+import { CinemaMessagePattern } from '@app/common';
+import { MS_INJECTION_TOKEN, MicroserviceName } from '@app/core';
 import { Booking, BookingStatus } from '../../data-access/booking/booking.entity';
 import { BookingItem, ItemType } from '../../data-access/booking/booking-item.entity';
 import { Product } from '../../data-access/product/product.entity';
 import { BaseRepository } from '../../data-access/base.repository';
 import { CreateBookingDto } from './booking.dto';
 import { PromotionService } from '../promotion/promotion.service';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
-export class BookingService {
+export class BookingService implements OnModuleInit {
   private readonly logger = new Logger(BookingService.name);
 
   constructor(
@@ -21,17 +23,24 @@ export class BookingService {
     @InjectRepository(Product)
     private readonly productRepository: BaseRepository<Product>,
     private readonly promotionService: PromotionService,
-    private readonly httpService: HttpService,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.CinemaService, Transport.KAFKA))
+    private readonly cinemaClientKafka: ClientKafka,
   ) {}
 
+  async onModuleInit() {
+    this.cinemaClientKafka.subscribeToResponseOf(CinemaMessagePattern.GET_SHOWTIME);
+    this.cinemaClientKafka.subscribeToResponseOf(CinemaMessagePattern.LOCK_SEATS);
+    this.cinemaClientKafka.subscribeToResponseOf(CinemaMessagePattern.UNLOCK_SEATS);
+    await this.cinemaClientKafka.connect();
+  }
+
   async create(userId: string, createBookingDto: CreateBookingDto) {
-    // 1. Lấy thông tin Showtime từ CinemaService qua APISIX
+    // 1. Lấy thông tin Showtime từ CinemaService qua Kafka
     let showtimeData: any;
     try {
-      const response = await firstValueFrom(
-        this.httpService.get(`http://localhost:9080/cinema-service/api/showtimes/${createBookingDto.showtimeId}`)
+      showtimeData = await lastValueFrom(
+        this.cinemaClientKafka.send(CinemaMessagePattern.GET_SHOWTIME, { id: createBookingDto.showtimeId })
       );
-      showtimeData = response.data;
     } catch (error) {
       this.logger.error(`Failed to fetch showtime: ${error.message}`);
       throw new BadRequestException('Invalid showtime ID or Cinema Service is down');
@@ -40,9 +49,11 @@ export class BookingService {
     const booking = new Booking();
     booking.userId = userId;
     booking.showtimeId = createBookingDto.showtimeId;
+    booking.status = BookingStatus.PENDING;
     
     let subtotal = 0;
     const items: BookingItem[] = [];
+    const seatIds: string[] = [];
 
     for (const itemDto of createBookingDto.items) {
       const item = new BookingItem();
@@ -57,6 +68,7 @@ export class BookingService {
       } else {
         // Lấy giá vé từ showtime
         item.price = showtimeData.price;
+        seatIds.push(item.itemId);
       }
 
       subtotal += Number(item.price) * Number(item.quantity);
@@ -72,7 +84,27 @@ export class BookingService {
       booking.totalAmount = subtotal - booking.discountAmount;
     }
 
+    // Persist booking first to get ID
     await this.bookingRepository.getEntityManager().persistAndFlush(booking);
+
+    // 2. Lock Seats via Kafka (Saga Step)
+    if (seatIds.length > 0) {
+      try {
+        await lastValueFrom(
+          this.cinemaClientKafka.send(CinemaMessagePattern.LOCK_SEATS, {
+            showtimeId: booking.showtimeId,
+            seatIds,
+            bookingId: booking.id
+          })
+        );
+      } catch (error) {
+        this.logger.error(`Failed to lock seats: ${error.message}`);
+        // Compensating action: Delete the pending booking
+        await this.bookingRepository.getEntityManager().removeAndFlush(booking);
+        throw new BadRequestException('Failed to lock seats. They might be already occupied.');
+      }
+    }
+
     await this.bookingItemRepository.getEntityManager().persistAndFlush(items);
 
     return {
