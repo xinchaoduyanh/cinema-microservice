@@ -184,8 +184,10 @@ check-env:
 # Health check
 health:
 	@echo "🏥 Checking service health..."
-	@curl -s -I http://localhost:3300/api | grep -q "200 OK" && echo "✅ Auth service (3300) is UP" || echo "❌ Auth service (3300) is DOWN"
-	@curl -s -I http://localhost:3301/api | grep -q "200 OK" && echo "✅ User service (3301) is UP" || echo "❌ User service (3301) is DOWN"
-	@curl -s -I http://localhost:3302/api | grep -q "200 OK" && echo "✅ Movie service (3302) is UP" || echo "❌ Movie service (3302) is DOWN"
-	@curl -s -I http://localhost:3303/api | grep -q "200 OK" && echo "✅ Notification service (3303) is UP" || echo "❌ Notification service (3303) is DOWN"
+	@curl -s -I http://localhost:3300/api | grep -q "200" && echo "✅ Auth service (3300) is UP" || echo "❌ Auth service (3300) is DOWN"
+	@curl -s -I http://localhost:3301/api | grep -q "200" && echo "✅ User service (3301) is UP" || echo "❌ User service (3301) is DOWN"
+	@curl -s -I http://localhost:3302/api | grep -q "200" && echo "✅ Movie service (3302) is UP" || echo "❌ Movie service (3302) is DOWN"
+	@curl -s -I http://localhost:3303/api | grep -q "200" && echo "✅ Notification service (3303) is UP" || echo "❌ Notification service (3303) is DOWN"
+	@curl -s -I http://localhost:3304/api | grep -q "200" && echo "✅ Cinema service (3304) is UP" || echo "❌ Cinema service (3304) is DOWN"
+	@curl -s -I http://localhost:3305/api | grep -q "200" && echo "✅ Booking service (3305) is UP" || echo "❌ Booking service (3305) is DOWN"
 	@echo "✅ Health check complete!"

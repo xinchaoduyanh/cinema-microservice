@@ -1,8 +1,8 @@
 {
-  "name": "nest-turbo-starter",
+  "name": "cinema-management-be",
   "private": true,
   "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
+  "description": "Cinema Management Microservices Backend",
   "license": "MIT",
   "workspaces": [
     "apps/*",

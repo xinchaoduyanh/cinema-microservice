@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RoomService } from './room.service';
-import { CreateRoomDto, UpdateRoomDto } from './room.dto';
+import { CreateRoomDto, UpdateRoomDto, GenerateSeatsDto } from './room.dto';
 
 @Controller('rooms')
 export class RoomController {
@@ -9,6 +9,11 @@ export class RoomController {
   @Post()
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomService.create(createRoomDto);
+  }
+
+  @Post(':id/generate-seats')
+  generateSeats(@Param('id') id: string, @Body() generateSeatsDto: GenerateSeatsDto) {
+    return this.roomService.generateSeats(id, generateSeatsDto);
   }
 
   @Get()
@@ -36,3 +41,4 @@ export class RoomController {
     return this.roomService.remove(id);
   }
 }
+

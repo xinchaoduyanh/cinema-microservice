@@ -2,6 +2,15 @@
   "projects": [
     {
       "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
+    },
+    {
+      "type": "application",
       "root": "apps/auth-service",
       "entryFile": "main",
       "sourceRoot": "apps/auth-service/src",
@@ -35,13 +44,36 @@
       "compilerOptions": {
         "outputPath": "dist"
       }
+    },
+    {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
+    },
+    {
+      "type": "application",
+      "root": "apps/movie-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/movie-service/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
+    },
+    {
+      "type": "application",
+      "root": "apps/notification-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification-service/src",
+      "compilerOptions": {
+        "outputPath": "dist"
+      }
     }
   ],
   "monorepo": true,
-  "root": "apps/nest-turbo-starter",
-  "sourceRoot": "apps/nest-turbo-starter/src",
-  "compilerOptions": {
-    "webpack": true,
-    "tsConfigPath": "apps/nest-turbo-starter/tsconfig.app.json"
-  }
+  "root": "apps/api-gateway",
+  "sourceRoot": "apps/api-gateway/src"
 }

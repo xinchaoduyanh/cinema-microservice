@@ -147,7 +147,7 @@ services:
         size: 320
       name: auth-upstream
       nodes:
-        - host: 172.17.0.1
+        - host: 172.23.0.1
           port: ${APISIX_AUTH_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -246,7 +246,7 @@ services:
         size: 320
       name: user-upstream
       nodes:
-        - host: 172.17.0.1
+        - host: 172.23.0.1
           port: ${APISIX_USER_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -345,7 +345,7 @@ services:
         size: 320
       name: notification-upstream
       nodes:
-        - host: 172.17.0.1
+        - host: 172.23.0.1
           port: ${APISIX_NOTIFICATION_SERVICE_PORT}
           priority: 0
           weight: 1
@@ -434,7 +434,7 @@ services:
         size: 320
       name: movie-upstream
       nodes:
-        - host: 172.17.0.1
+        - host: 172.23.0.1
           port: ${APISIX_MOVIE_SERVICE_PORT}
           priority: 0
           weight: 1
