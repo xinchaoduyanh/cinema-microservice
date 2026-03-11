@@ -1,158 +1,206 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
+import { Plus, Search, Filter, Edit2, Trash2, Eye, MoreHorizontal, Film, Star, Clock, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, MoreVertical, Edit, Trash2 } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Card, CardContent } from "@/components/ui/card"
 import { movieService, Movie } from "@/services/movie.service"
-import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
+import Link from "next/link"
 
 export default function MoviesPage() {
-  const router = useRouter()
   const [movies, setMovies] = useState<Movie[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    fetchMovies()
+  }, [])
 
   const fetchMovies = async () => {
     try {
       setLoading(true)
-      const data = await movieService.getAll({ search })
+      const data = await movieService.getAll()
       setMovies(data)
     } catch (error) {
-      console.error("Failed to fetch movies", error)
+      console.error("Failed to fetch movies:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchMovies()
-  }, [search])
+  const filteredMovies = movies.filter(movie => 
+    movie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    movie.originalTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this movie?")) {
+  const getStatusColor = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'NOW_SHOWING': return 'bg-foreground text-background border-foreground';
+      case 'COMING_SOON': return 'bg-background text-foreground border-foreground/20';
+      case 'END_OF_SHOW': return 'bg-muted text-muted-foreground border-border opacity-50';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  }
+
+  const deleteMovie = async (id: string, title: string) => {
+    if (confirm(`Are you sure you want to remove "${title}"?`)) {
       try {
         await movieService.delete(id)
-        fetchMovies()
+        setMovies(prev => prev.filter(m => m.id !== id))
       } catch (error) {
-        console.error("Failed to delete movie", error)
-        alert("Failed to delete movie")
+        console.error("Failed to delete movie:", error)
       }
     }
   }
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Movies Management</h1>
-          <p className="text-gray-400">Manage your cinema's movie catalog</p>
+      {/* Header section with Stats & Actions */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-muted-foreground text-[9px] font-bold uppercase tracking-[0.5em] mb-2">
+            <Film className="h-3 w-3" />
+            Vault / Collection
+          </div>
+          <h1 className="text-6xl font-black tracking-tighter text-foreground font-serif uppercase leading-tight">
+            Movies <span className="opacity-40 italic">Archive</span>
+          </h1>
+          <p className="text-muted-foreground max-w-lg text-sm font-medium leading-relaxed opacity-70">
+            Curating the finest selection of European and International cinema. Manage your digital vault with precision.
+          </p>
         </div>
-        <Link href="/movies/create">
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300">
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Movie
-          </Button>
-        </Link>
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Input 
+              placeholder="Filter by title..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 w-80 bg-background/40 backdrop-blur-md border-border/50 rounded-full h-12 focus:w-96 transition-all duration-500 font-medium"
+            />
+          </div>
+          <Link href="/dashboard/movies/new">
+            <Button className="cinematic-glow font-bold rounded-full px-8 h-12 bg-primary text-black hover:scale-105 active:scale-95 transition-all duration-300">
+              <Plus className="h-5 w-5 mr-2" />
+              New Entry
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4 glass p-5 rounded-2xl">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input 
-            placeholder="Search movies by title..." 
-            className="pl-10 bg-white/5 border-white/10 focus:bg-white/10 focus:border-white/20 rounded-xl h-11"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+          {[1,2,3,4,5,6,7,8].map(i => (
+            <div key={i} className="space-y-4 animate-pulse">
+              <div className="aspect-[2/3] bg-muted rounded-2xl" />
+              <div className="h-4 bg-muted rounded w-3/4 mx-auto" />
+              <div className="h-3 bg-muted rounded w-1/2 mx-auto" />
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className="rounded-2xl border border-white/5 glass overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-400">
-            <thead className="bg-white/5 text-gray-300 uppercase font-medium text-xs tracking-wider">
-              <tr>
-                <th className="px-6 py-5">Title</th>
-                <th className="px-6 py-5">Release Date</th>
-                <th className="px-6 py-5 text-center">Duration</th>
-                <th className="px-6 py-5 text-center">Rating</th>
-                <th className="px-6 py-5 text-center">Status</th>
-                <th className="px-6 py-5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {loading ? (
-                <tr>
-                   <td colSpan={6} className="px-6 py-8 text-center">Loading movies...</td>
-                </tr>
-              ) : movies.length === 0 ? (
-                <tr>
-                   <td colSpan={6} className="px-6 py-8 text-center">No movies found.</td>
-                </tr>
-              ) : (
-                movies.map((movie) => (
-                  <tr key={movie.id} className="hover:bg-white/5 transition-all duration-200 group">
-                    <td className="px-6 py-5 font-medium text-white">
-                      <div className="flex items-center gap-3">
-                        {movie.posterUrl && (
-                          <img src={movie.posterUrl} alt={movie.title} className="w-10 h-14 object-cover rounded-lg bg-white/5 ring-1 ring-white/10 group-hover:ring-white/20 transition-all" />
-                        )}
-                        <div>
-                          <div className="font-semibold">{movie.title}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">{movie.originalTitle}</div>
-                        </div>
+      ) : (
+        <AnimatePresence mode="popLayout">
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16"
+          >
+            {filteredMovies.map((movie, index) => (
+              <motion.div
+                key={movie.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="group cursor-pointer">
+                  {/* Poster Area - Elevating with Shadow & Border */}
+                  <div className="relative aspect-[2/3] mb-6 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transition-all duration-700 group-hover:shadow-primary/20 group-hover:-translate-y-2">
+                    {movie.posterUrl ? (
+                      <img 
+                        src={movie.posterUrl} 
+                        alt={movie.title} 
+                        className="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted/20 flex items-center justify-center">
+                        <Film className="h-16 w-16 text-muted-foreground/10" />
                       </div>
-                    </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      {new Date(movie.releaseDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-5 text-center font-medium">{movie.duration}m</td>
-                    <td className="px-6 py-5 text-center">
-                      <span className="bg-yellow-500/10 text-yellow-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-yellow-500/20">
-                        {movie.ageRating}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-center">
-                      <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${
-                        movie.status === 'NOW_SHOWING' 
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                          : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                      }`}>
-                        {movie.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
+                    )}
+                    
+                    {/* Status Pin */}
+                    <div className={cn(
+                      "absolute top-5 left-5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] border backdrop-blur-xl shadow-2xl",
+                      getStatusColor(movie.status)
+                    )}>
+                      {movie.status.replace('_', ' ')}
+                    </div>
+
+                    {/* Quality Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col justify-end p-8">
+                       <div className="flex gap-3 translate-y-8 group-hover:translate-y-0 transition-transform duration-700 delay-100">
+                          <Link href={`/dashboard/movies/${movie.id}/edit`} className="flex-1">
+                            <Button variant="secondary" size="sm" className="w-full rounded-xl font-bold bg-white text-black hover:bg-primary hover:text-black transition-colors">
+                              Edit
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="destructive" 
+                            size="icon" 
+                            className="rounded-xl bg-red-500/20 backdrop-blur-md border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteMovie(movie.id, movie.title);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-black/90 backdrop-blur-xl border-white/10 text-gray-200">
-                          <DropdownMenuItem className="hover:bg-white/5 focus:bg-white/5 rounded-lg" onClick={() => router.push(`/movies/${movie.id}`)}>
-                            <Edit className="mr-2 h-4 w-4" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-400 focus:text-red-400 hover:bg-white/5 focus:bg-white/5 rounded-lg" onClick={() => handleDelete(movie.id)}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Typography - European Minimalist */}
+                  <div className="text-center space-y-2">
+                    <h3 className="text-2xl font-serif font-medium text-foreground transition-all duration-500 group-hover:text-primary leading-tight">
+                      {movie.title}
+                    </h3>
+                    
+                    <div className="flex items-center justify-center gap-3 text-[11px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
+                       <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(movie.releaseDate).getFullYear()}</span>
+                       <span className="w-1 h-1 bg-muted-foreground rounded-full" />
+                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {movie.duration}m</span>
+                       <span className="w-1 h-1 bg-muted-foreground rounded-full" />
+                       <span className="border border-muted-foreground/30 px-1.5 rounded">{movie.ageRating}</span>
+                    </div>
+
+                    <div className="pt-4 flex items-center justify-center gap-1">
+                       {[1,2,3,4,5].map(star => (
+                          <Star 
+                            key={star} 
+                            className={cn(
+                              "h-3 w-3", 
+                              star <= (movie.rating / 2) ? "text-primary fill-primary" : "text-muted/30"
+                            )} 
+                          />
+                       ))}
+                       <span className="text-[10px] font-bold ml-2 text-primary">{movie.rating}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      {!loading && filteredMovies.length === 0 && (
+        <div className="flex flex-col items-center justify-center p-20 glass-card">
+          <Film className="h-16 w-16 text-muted-foreground/20 mb-4" />
+          <h3 className="text-xl font-bold text-muted-foreground">No movies found</h3>
+          <p className="text-muted-foreground text-sm">Try adjusting your search query.</p>
         </div>
-      </div>
+      )}
     </div>
   )
 }
