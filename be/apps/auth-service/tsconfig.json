@@ -9,7 +9,16 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": ".",
+    "paths": {
+      "@app/common": ["../../libs/common/src/index.ts"],
+      "@app/common/*": ["../../libs/common/src/*"],
+      "@app/core": ["../../libs/core/src/index.ts"],
+      "@app/core/*": ["../../libs/core/src/*"],
+      "@app/email-template": ["../../libs/email-template/index.ts"],
+      "@app/email-template/*": ["../../libs/email-template/*"],
+      "src/*": ["src/*"]
+    },
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
@@ -20,5 +29,7 @@
     "composite": true,
     "jsx": "react-jsx"
   },
-  "references": [{ "path": "../../libs/common" }, { "path": "../../libs/core" }]
+  "references": [{ "path": "../../libs/common" }, { "path": "../../libs/core" }],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

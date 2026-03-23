@@ -25,6 +25,22 @@ import { PromotionModule } from '../promotion/promotion.module';
           options: configService.get('kafka'),
         }),
       },
+      {
+        name: MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.KAFKA),
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: configService.get('kafka'),
+        }),
+      },
+      {
+        name: MS_INJECTION_TOKEN(MicroserviceName.NotificationService, Transport.KAFKA),
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: configService.get('kafka'),
+        }),
+      },
     ]),
   ],
   controllers: [BookingController],

@@ -14,3 +14,5 @@ export * from './config.validation';
 export * from './tcp.config';
 export * from './app-common.config';
 export * from './smtp.config';
+export * from './upload-lambda.config';
+export * from './mail.config';

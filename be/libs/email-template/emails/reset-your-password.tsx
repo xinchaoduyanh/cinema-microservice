@@ -42,7 +42,7 @@ export const ResetYourPasswordEmail = ({
           {/* Body text */}
           <Section>
             <Text className="m-0 mb-4">
-              It looks like you requested a password reset for your AI Agent account.
+              It looks like you requested a password reset for your AESTHETIX account.
             </Text>
             <Text className="m-0 mb-6">
               To reset your password, click the button below.
@@ -66,16 +66,16 @@ export const ResetYourPasswordEmail = ({
               Please click the button before it expires.
             </Text>
             <Text className="m-0">
-              Didn’t sign up for AI Agent? No worries — just ignore this email.
+              Didn’t request this for AESTHETIX? No worries, just ignore this email.
             </Text>
           </Section>
         </Container>
 
         {/* Footer */}
         <Section className="text-center text-[#4B5565] text-[14px] my-10">
-          <Text className="m-0 mb-3">© AI Agent 2024. All rights reserved</Text>
+          <Text className="m-0 mb-3">© AESTHETIX 2024. All rights reserved</Text>
           <Text className="m-0 text-[12px]">
-            You are receiving this email because you are a member of AI Agent.{" "}
+            You are receiving this email because you are a member of AESTHETIX.{" "}
             <a href={unsubscribeLink} className="text-[#2254F6] no-underline">
               Unsubscribe
             </a>

@@ -38,7 +38,7 @@ fe/
 
 ### Backend API:
 
-- **Base URL**: `http://localhost:9080` (via APISIX Gateway)
+- **Base URL**: `http://localhost:9080` (via backend API gateway)
 - **Services**:
   - Auth Service: `/api/auth/*`
   - User Service: `/api/users/*`

@@ -13,11 +13,7 @@
     "sourceMap": true,
     "incremental": true,
     "skipLibCheck": true,
-    "composite": true,
-    "paths": {
-      "@app/common": ["../common/src"],
-      "@app/common/*": ["../common/src/*"]
-    }
+    "composite": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"],

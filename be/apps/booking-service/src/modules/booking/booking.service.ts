@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, Logger, Inject, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { ClientKafka, Transport } from '@nestjs/microservices';
-import { CinemaMessagePattern } from '@app/common';
+import { CinemaMessagePattern, NotificationMessagePattern, UserMessagePattern } from '@app/common';
 import { MS_INJECTION_TOKEN, MicroserviceName } from '@app/core';
 import { Booking, BookingStatus } from '../../data-access/booking/booking.entity';
 import { BookingItem, ItemType } from '../../data-access/booking/booking-item.entity';
@@ -25,13 +25,23 @@ export class BookingService implements OnModuleInit {
     private readonly promotionService: PromotionService,
     @Inject(MS_INJECTION_TOKEN(MicroserviceName.CinemaService, Transport.KAFKA))
     private readonly cinemaClientKafka: ClientKafka,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.UserService, Transport.KAFKA))
+    private readonly userClientKafka: ClientKafka,
+    @Inject(MS_INJECTION_TOKEN(MicroserviceName.NotificationService, Transport.KAFKA))
+    private readonly notificationClientKafka: ClientKafka,
   ) {}
 
   async onModuleInit() {
     this.cinemaClientKafka.subscribeToResponseOf(CinemaMessagePattern.GET_SHOWTIME);
     this.cinemaClientKafka.subscribeToResponseOf(CinemaMessagePattern.LOCK_SEATS);
     this.cinemaClientKafka.subscribeToResponseOf(CinemaMessagePattern.UNLOCK_SEATS);
-    await this.cinemaClientKafka.connect();
+    this.userClientKafka.subscribeToResponseOf(UserMessagePattern.GET_USER);
+    this.notificationClientKafka.subscribeToResponseOf(NotificationMessagePattern.BOOKING_SUCCESS);
+    await Promise.all([
+      this.cinemaClientKafka.connect(),
+      this.userClientKafka.connect(),
+      this.notificationClientKafka.connect(),
+    ]);
   }
 
   async create(userId: string, createBookingDto: CreateBookingDto) {
@@ -106,6 +116,35 @@ export class BookingService implements OnModuleInit {
     }
 
     await this.bookingItemRepository.getEntityManager().persistAndFlush(items);
+    booking.status = BookingStatus.CONFIRMED;
+    await this.bookingRepository.getEntityManager().flush();
+
+    try {
+      const user = await lastValueFrom(
+        this.userClientKafka.send(UserMessagePattern.GET_USER, { id: userId })
+      );
+
+      await lastValueFrom(
+        this.notificationClientKafka.send(NotificationMessagePattern.BOOKING_SUCCESS, {
+          email: user.email,
+          name: user.fullName || user.email,
+          bookingId: booking.id,
+          movieTitle: showtimeData.movieTitle || showtimeData.movie?.title || showtimeData.movieId,
+          cinemaName: showtimeData.room?.cinema?.name || 'AESTHETIX Cinema',
+          hallName: showtimeData.room?.name || 'Main Hall',
+          showDate: new Date(showtimeData.startTime).toLocaleDateString('vi-VN'),
+          showTime: new Date(showtimeData.startTime).toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          seats: seatIds,
+          totalAmount: Number(booking.totalAmount),
+          currency: showtimeData.currency || 'VND',
+        })
+      );
+    } catch (error) {
+      this.logger.warn(`Booking created but failed to dispatch booking email: ${error.message}`);
+    }
 
     return {
       ...booking,

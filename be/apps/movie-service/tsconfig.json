@@ -9,7 +9,14 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": ".",
+    "paths": {
+      "@app/common": ["../../libs/common/src/index.ts"],
+      "@app/common/*": ["../../libs/common/src/*"],
+      "@app/core": ["../../libs/core/src/index.ts"],
+      "@app/core/*": ["../../libs/core/src/*"],
+      "src/*": ["src/*"]
+    },
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,

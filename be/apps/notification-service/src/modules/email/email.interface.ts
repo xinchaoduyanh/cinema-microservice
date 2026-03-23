@@ -29,8 +29,24 @@ export interface OtpSecureLoginMailPayload {
   expiresIn: string;
 }
 
+export interface BookingSuccessMailPayload {
+  email: string;
+  name: string;
+  bookingId: string;
+  movieTitle: string;
+  cinemaName: string;
+  hallName: string;
+  showDate: string;
+  showTime: string;
+  seats: string[];
+  totalAmount: number;
+  currency?: string;
+}
+
 export type MailPayload =
   | VerifySignupMailPayload
   | ResetPasswordMailPayload
   | PasswordUpdatedMailPayload
-  | OtpSecureLoginMailPayload;
+  | OtpSecureLoginMailPayload
+  | BookingSuccessMailPayload;
+

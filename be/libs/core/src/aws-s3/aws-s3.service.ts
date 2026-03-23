@@ -1,5 +1,5 @@
 import { s3Configuration } from '@app/common';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -72,5 +72,14 @@ export class AwsS3Service {
     await this.s3Client.send(command);
 
     return { fileKey };
+  }
+
+  async deleteFile(fileKey: string): Promise<void> {
+    await this.s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: fileKey,
+      }),
+    );
   }
 }

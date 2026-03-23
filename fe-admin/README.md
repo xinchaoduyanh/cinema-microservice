@@ -133,7 +133,7 @@ fe-admin/
 
 ### Backend API:
 
-- **Base URL**: `http://localhost:9080` (via APISIX Gateway)
+- **Base URL**: `http://localhost:9080` (via backend API gateway)
 - **Admin Endpoints**:
   - Auth: `/api/auth/*`
   - Movies: `/api/admin/movies/*`

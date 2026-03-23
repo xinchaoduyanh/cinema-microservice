@@ -22,8 +22,7 @@ export interface AuthResponse {
 
 export const authService = {
   login: async (data: LoginParams) => {
-    // API endpoint based on your APISIX route config
-    // Assuming /auth-service/api/auth/login based on fe-admin logic
+    // API endpoint exposed by the backend API gateway
     const response = await api.post<AuthResponse>('/auth-service/api/auth/login', data);
     return response.data;
   },

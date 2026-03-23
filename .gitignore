@@ -1,4 +1,5 @@
-/node_modules
+# Dependencies — match at any depth (not just root)
+node_modules
 /docs
 .cursorrules
 .env

@@ -1,4 +1,13 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../../"
+  },
+  "include": [
+    "src/**/*",
+    "../../libs/common/src/**/*",
+    "../../libs/core/src/**/*",
+    "../../libs/email-template/**/*"
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts", "tmp"]
 }

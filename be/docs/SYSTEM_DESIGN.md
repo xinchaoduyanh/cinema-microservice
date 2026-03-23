@@ -114,7 +114,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                      API GATEWAY LAYER                           │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │              Apache APISIX / Kong Gateway                 │   │
+│  │                 Custom API Gateway Layer                  │   │
 │  │  • Routing  • Auth  • Rate Limiting  • Load Balancing   │   │
 │  └──────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
@@ -869,39 +869,18 @@ const compensationMap = {
 
 ## 🌐 API Gateway & Routing
 
-### **APISIX Routes Configuration**
+### **Gateway Route Strategy**
 
-```yaml
-routes:
-  # Auth Service
-  - uri: /auth-service/*
-    upstream:
-      nodes:
-        "auth-service:3300": 1
-    plugins:
-      rate-limit:
-        count: 100
-        time_window: 60
+The API gateway listens on port `9080` and forwards requests to internal services using service-specific prefixes:
 
-  # Movie Service (Public)
-  - uri: /movie-service/api/movies*
-    upstream:
-      nodes:
-        "movie-service:3302": 1
-    plugins:
-      cors: {}
-      
-  # Booking Service (Authenticated)
-  - uri: /booking-service/*
-    upstream:
-      nodes:
-        "booking-service:3305": 1
-    plugins:
-      jwt-auth: {}
-      rate-limit:
-        count: 50
-        time_window: 60
-```
+- `/auth-service/*` -> `auth-service:3300`
+- `/user-service/*` -> `user-service:3301`
+- `/movie-service/*` -> `movie-service:3302`
+- `/notification-service/*` -> `notification-service:3303`
+- `/cinema-service/*` -> `cinema-service:3304`
+- `/booking-service/*` -> `booking-service:3305`
+
+Cross-cutting concerns such as authentication, rate limiting, and request logging are handled in the gateway application instead of an external gateway product.
 
 ---
 
@@ -983,8 +962,8 @@ interface BookingCreatedEvent {
 - **Queue:** BullMQ (Redis-based)
 
 ### **API Gateway**
-- **Primary:** Apache APISIX 3.14
-- **Alternative:** Kong Gateway 3.12
+- **Primary:** Custom NestJS API Gateway
+- **Port:** 9080
 
 ### **Authentication**
 - **Strategy:** JWT + OAuth2

@@ -6,8 +6,9 @@ import {
   kafkaConfiguration,
   rabbitmqConfiguration,
   tcpConfiguration,
+  uploadLambdaConfiguration,
 } from '@app/common';
-import { AwsS3Module, RedisModule } from '@app/core';
+import { RedisModule, UploadModule } from '@app/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
@@ -40,6 +41,7 @@ import { GatewayAuthStrategy } from './auth/strategies/gateway-auth.strategy';
         rabbitmqConfiguration,
         kafkaConfiguration,
         tcpConfiguration,
+        uploadLambdaConfiguration,
       ],
     }),
     MikroOrmModule.forRootAsync({
@@ -64,6 +66,7 @@ import { GatewayAuthStrategy } from './auth/strategies/gateway-auth.strategy';
     MovieModule,
     GenreModule,
     RedisModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

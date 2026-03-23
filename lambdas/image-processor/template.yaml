@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Image upload processor for cinema-management
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+
+Resources:
+  ImageProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: cinema-image-processor
+      CodeUri: .
+      Handler: src/index.handler
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref UploadBucketName
+      Environment:
+        Variables:
+          AWS_REGION: !Ref AWS::Region
+          AWS_S3_BUCKET_NAME: !Ref UploadBucketName
+          AWS_S3_PUBLIC_BASE_URL: !Ref UploadPublicBaseUrl
+          UPLOAD_MAX_SIZE_BYTES: !Ref UploadMaxSizeBytes
+          UPLOAD_ALLOWED_MIME_TYPES: !Ref UploadAllowedMimeTypes
+          UPLOAD_DEFAULT_FOLDER: !Ref UploadDefaultFolder
+          UPLOAD_STAGING_FOLDER: !Ref UploadStagingFolder
+
+Parameters:
+  UploadBucketName:
+    Type: String
+  UploadPublicBaseUrl:
+    Type: String
+    Default: ''
+  UploadMaxSizeBytes:
+    Type: String
+    Default: '10485760'
+  UploadAllowedMimeTypes:
+    Type: String
+    Default: image/jpeg,image/png,image/webp
+  UploadDefaultFolder:
+    Type: String
+    Default: uploads
+  UploadStagingFolder:
+    Type: String
+    Default: _incoming
+
+Outputs:
+  ImageProcessorFunctionName:
+    Value: !Ref ImageProcessorFunction
+  ImageProcessorFunctionArn:
+    Value: !GetAtt ImageProcessorFunction.Arn

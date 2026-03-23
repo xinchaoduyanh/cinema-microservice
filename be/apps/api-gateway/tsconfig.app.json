@@ -1,7 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "composite": false,
     "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "outDir": "../../dist/apps/api-gateway"
   },
   "include": ["src/**/*"],

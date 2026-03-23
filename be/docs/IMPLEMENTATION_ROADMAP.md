@@ -20,7 +20,7 @@
 ✅ Configure Docker & Docker Compose
 ✅ Setup PostgreSQL databases (per service)
 ✅ Setup Redis
-✅ Setup Apache APISIX
+✅ Setup API gateway foundation
 ✅ Configure environment variables
 ✅ Setup shared libraries (@app/common, @app/core)
 ```

@@ -10,16 +10,19 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
     "./*": {
+      "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
       "require": "./dist/*.js"
     }
   },
   "dependencies": {
     "@app/common": "workspace:*",
+    "@aws-sdk/client-lambda": "^3.821.0",
     "@aws-sdk/client-s3": "^3.821.0",
     "@aws-sdk/client-ses": "^3.808.0",
     "@aws-sdk/s3-request-presigner": "^3.821.0",

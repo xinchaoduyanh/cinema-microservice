@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards } from '@nestjs/common';
+import { User, UserRequestPayload } from '@app/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './booking.dto';
 
@@ -7,10 +8,11 @@ export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
   @Post()
-  create(@Body() createBookingDto: CreateBookingDto) {
-    // NOTE: In a real scenario, we'd get userId from JWT
-    const userId = 'anonymous'; 
-    return this.bookingService.create(userId, createBookingDto);
+  create(
+    @User() userPayload: UserRequestPayload,
+    @Body() createBookingDto: CreateBookingDto,
+  ) {
+    return this.bookingService.create(userPayload.id, createBookingDto);
   }
 
   @Get('user/:userId')

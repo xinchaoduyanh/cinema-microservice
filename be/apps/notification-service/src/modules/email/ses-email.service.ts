@@ -71,6 +71,7 @@ export class SesEmailService extends AbstractEmailService {
         context: 'EmailService.sendEmail',
         error: error,
       });
+      throw error;
     }
   }
 }

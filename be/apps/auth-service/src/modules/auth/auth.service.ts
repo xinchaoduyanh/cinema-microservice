@@ -124,6 +124,8 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
       this.userClientKafka.send(UserMessagePattern.CREATE_USER, userData),
     );
 
+    await this.sendVerifyAccountEmail(newUser);
+
     return this.manageUserToken(newUser);
   }
 
@@ -352,5 +354,36 @@ export class AuthService extends BaseService implements OnModuleInit, OnModuleDe
     );
 
     return { success: true };
+  }
+
+  private async sendVerifyAccountEmail(user: {
+    id: string;
+    email: string;
+    fullName?: string;
+  }): Promise<void> {
+    const token = uuidv4();
+    const tokenTtl = getTtlValue(this.codeExpiresConfig.verifyEmail);
+    const verifyUrl =
+      this.appCommonConfig.frontendUrl +
+      '/redirect?email=' +
+      encodeURIComponent(user.email) +
+      '&token=' +
+      token +
+      '&action=' +
+      AccountAction.VerifyEmail;
+
+    await this.msResponse(
+      this.notificationClientKafka.send(NotificationMessagePattern.VERIFY_ACCOUNT, {
+        email: user.email,
+        name: user.fullName || user.email,
+        verifyUrl,
+      }),
+    );
+
+    await this.redisService.setValue<string>(
+      this.redisService.getVerifyEmailKey(user.id),
+      token,
+      tokenTtl,
+    );
   }
 }

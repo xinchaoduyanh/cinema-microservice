@@ -2,9 +2,9 @@
 import { faker } from '@faker-js/faker';
 
 async function seedUsers() {
-  const APISIX_GATEWAY_URL = 'http://localhost:9080/auth-service/api/auth/sign-up';
+  const API_GATEWAY_URL = 'http://localhost:9080/auth-service/api/auth/sign-up';
   
-  console.log(`Starting to seed 10 users to ${APISIX_GATEWAY_URL}...`);
+  console.log(`Starting to seed 10 users to ${API_GATEWAY_URL}...`);
 
   for (let i = 0; i < 10; i++) {
     const password = 'Password@123';
@@ -16,7 +16,7 @@ async function seedUsers() {
     };
 
     try {
-      const response = await fetch(APISIX_GATEWAY_URL, {
+      const response = await fetch(API_GATEWAY_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

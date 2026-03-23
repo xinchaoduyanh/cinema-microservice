@@ -28,6 +28,7 @@ services:
     volumes:
       - ${PWD}:/work
     ports:
+      - '9080:9080'
       - '3300:3300'
       - '3301:3301'
       - '3302:3302'
@@ -124,41 +125,6 @@ services:
       AUTH_TYPE: LOGIN_FORM
       SPRING_SECURITY_USER_NAME: admin
       SPRING_SECURITY_USER_PASSWORD: secret
-
-  # ============================================
-  # APISIX Gateway (Optional - uncomment if needed)
-  # ============================================
-  # etcd:
-  #   extends:
-  #     file: .docker/compose/apisix/apisix.yml
-  #     service: etcd
-  #   container_name: nest_turbo_apisix_etcd
-  #   ports:
-  #     - '2379:2379'
-  #     - '2380:2380'
-  #   networks:
-  #     - nest-turbo-network
-  #   volumes:
-  #     - ./.docker/volumes/etcd-data:/etcd-data
-
-  # apisix:
-  #   extends:
-  #     file: .docker/compose/apisix/apisix.yml
-  #     service: apisix
-  #   container_name: nest_turbo_apisix
-  #   environment:
-  #     APISIX_PROFILE: ${APISIX_PROFILE}
-  #   volumes:
-  #     - ./config/apisix/conf/config-${APISIX_PROFILE}.yaml:/usr/local/apisix/conf/config-${APISIX_PROFILE}.yaml
-  #   ports:
-  #     - '${APISIX_NODE_LISTEN}:${APISIX_NODE_LISTEN}'
-  #     - '${APISIX_DEPLOYMENT_ADMIN_LISTEN}:${APISIX_DEPLOYMENT_ADMIN_LISTEN}'
-  #   depends_on:
-  #     - etcd
-  #   env_file:
-  #     - .env.docker
-  #   networks:
-  #     - nest-turbo-network
 
 volumes:
   redisinsight_data:
