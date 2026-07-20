@@ -1,5 +1,6 @@
 {
-  "$schema": "https://turborepo.org/schema.json",
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
   "tasks": {
     "build": {
       "dependsOn": [
@@ -46,61 +47,5 @@
         "build"
       ]
     }
-  },
-  "globalDependencies": [
-    ".env",
-    "tsconfig.json"
-  ],
-  "globalEnv": [
-    "TZ",
-    "NODE_ENV",
-    "FRONTEND_URL",
-    "NODE_ENV",
-    "JWT_SECRET",
-    "REDIS_URL",
-    "KAFKA_BROKERS",
-    "KAFKA_HEARTBEAT_INTERVAL",
-    "KAFKA_SESSION_TIMEOUT",
-    "KAFKA_SASL_ENABLED",
-    "KAFKA_SASL_MECHANISM",
-    "KAFKA_SASL_USERNAME",
-    "KAFKA_SASL_PASSWORD",
-    "CALL_SERVICE_TIMEOUT",
-    "JWT_SECRET",
-    "JWT_ACCESS_TOKEN_EXPIRES_IN",
-    "JWT_REFRESH_TOKEN_EXPIRES_IN",
-    "JWT_ISSUER",
-    "TCP_AUTH_SERVICE_HOST",
-    "TCP_AUTH_SERVICE_PORT",
-    "TCP_USER_SERVICE_HOST",
-    "TCP_USER_SERVICE_PORT",
-    "TCP_NOTIFICATION_SERVICE_HOST",
-    "TCP_NOTIFICATION_SERVICE_PORT",
-    "AWS_SES_SENDER",
-    "AWS_SES_REGION",
-    "AWS_SES_ACCESS_KEY_ID",
-    "AWS_SES_ACCESS_SECRET_ACCESS_KEY",
-    "AWS_S3_REGION",
-    "AWS_S3_ACCESS_KEY_ID",
-    "AWS_S3_SECRET_ACCESS_KEY",
-    "AWS_S3_BUCKET_NAME",
-    "AWS_S3_URL",
-    "MAIL_DRIVER",
-    "MAIL_HOST",
-    "MAIL_PORT",
-    "MAIL_USERNAME",
-    "MAIL_PASSWORD",
-    "MAIL_SENDER",
-    "MAIL_SECURE",
-    "API_GATEWAY_APP_PORT",
-    "API_GATEWAY_APP_NAME",
-    "AUTH_SERVICE_APP_PORT",
-    "USER_SERVICE_APP_PORT",
-    "MOVIE_SERVICE_APP_PORT",
-    "NOTIFICATION_SERVICE_APP_PORT",
-    "AUTH_SERVICE_APP_NAME",
-    "USER_SERVICE_APP_NAME",
-    "MOVIE_SERVICE_APP_NAME",
-    "NOTIFICATION_SERVICE_APP_NAME"
-  ]
+  }
 }

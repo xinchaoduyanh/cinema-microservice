@@ -1,0 +1,6 @@
+packages:
+  - 'be'
+  - 'be/apps/*'
+  - 'be/libs/*'
+  - 'fe'
+  - 'fe-admin'
