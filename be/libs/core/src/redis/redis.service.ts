@@ -2,6 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from './redis.constant';
 
+export type CacheOptions<T> = {
+  /** A stable, namespaced Redis key, e.g. `movie:list:page=1`. */
+  key: string;
+  /** TTL in seconds. The default is 5 minutes. */
+  ttlSeconds?: number;
+  /** Called only when the key is absent. */
+  loader: () => Promise<T>;
+};
+
 @Injectable()
 export class RedisService {
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
@@ -31,6 +40,24 @@ export class RedisService {
     } catch {
       return data as unknown as T;
     }
+  }
+
+  /**
+   * Read-through cache. Services only provide a key, TTL and data loader;
+   * serialization and cache lookup are handled here.
+   */
+  async remember<T>({ key, ttlSeconds = 300, loader }: CacheOptions<T>): Promise<T> {
+    const cached = await this.getValue<T>(key);
+    if (cached !== null) return cached;
+
+    const value = await loader();
+    await this.setValue(key, value, ttlSeconds);
+    return value;
+  }
+
+  /** Deletes a logical cache group without exposing Redis implementation details. */
+  async forget(key: string): Promise<void> {
+    await this.deleteKey(key);
   }
 
   async deleteKey(key: string): Promise<void> {

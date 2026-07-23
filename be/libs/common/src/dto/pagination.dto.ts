@@ -1,5 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsOptional, Max, Min } from 'class-validator';
+
+const toNumber = ({ value }: { value: unknown }) =>
+  typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({
@@ -7,6 +11,7 @@ export class PaginationQueryDto {
     example: 1,
     description: 'This field is used for normal pagination',
   })
+  @Transform(toNumber)
   @IsNumber()
   @IsOptional()
   @Min(1)
@@ -16,6 +21,7 @@ export class PaginationQueryDto {
     type: Number,
     example: 20,
   })
+  @Transform(toNumber)
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
@@ -46,3 +52,23 @@ export class PaginationResponseDto<T> {
   })
   pagination: PaginationMetadataResponseDto;
 }
+
+export type PaginationResult<T> = {
+  data: T[];
+  pagination: PaginationMetadataResponseDto;
+};
+
+/** Creates a uniform pagination response from any ORM/query implementation. */
+export const createPaginationResponse = <T>(
+  data: T[],
+  total: number,
+  query: Pick<PaginationQueryDto, 'page' | 'pageSize'>,
+): PaginationResult<T> => ({
+  data,
+  pagination: {
+    total,
+    page: query.page,
+    pageSize: query.pageSize,
+    totalPages: Math.ceil(total / query.pageSize),
+  },
+});

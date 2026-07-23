@@ -5,11 +5,9 @@
   "packageManager": "pnpm@10.17.0",
   "scripts": {
     "dev": "docker-compose -f be/docker-compose.dev.yml up -d && npx -y turbo run dev",
-    "dev:kong": "docker-compose -f be/docker-compose-kong.yml up -d && npx -y turbo run dev",
     "dev:fe": "npx -y turbo run dev --filter=fe --filter=fe-admin",
     "docker:dev": "docker-compose -f be/docker-compose.dev.yml up -d",
-    "docker:kong": "docker-compose -f be/docker-compose-kong.yml up -d",
-    "docker:stop": "docker-compose -f be/docker-compose.dev.yml down && docker-compose -f be/docker-compose-kong.yml down",
+    "docker:stop": "docker-compose -f be/docker-compose.dev.yml down",
     "build": "npx -y turbo run build",
     "lint": "npx -y turbo run lint"
   }
