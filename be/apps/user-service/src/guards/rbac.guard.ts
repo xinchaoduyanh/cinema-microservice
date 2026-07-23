@@ -1,7 +1,13 @@
 import {
   ACCESS_ROLES_KEY,
+  OWNER_PARAM_KEY,
+  OwnerParamOptions,
   ERROR_RESPONSE,
+  hasAnyPermission,
   IS_PUBLIC_KEY,
+  Permission,
+  PERMISSIONS_KEY,
+  REQUIRE_VERIFIED_EMAIL_KEY,
   Role,
   ServerException,
 } from '@app/common';
@@ -42,6 +48,16 @@ export class RoleBasedAccessControlGuard extends AuthGuard('gateway-auth') {
     if (isPublic) {
       return user ?? true;
     }
+
+    if (err || !user) {
+      throw err || new ServerException(ERROR_RESPONSE.UNAUTHORIZED);
+    }
+
+    const permissions = this.reflector.getAllAndOverride<Permission[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
+    if (permissions?.length && !hasAnyPermission(user.role!, permissions)) throw new ServerException(ERROR_RESPONSE.RESOURCE_FORBIDDEN);
+    if (this.reflector.getAllAndOverride<boolean>(REQUIRE_VERIFIED_EMAIL_KEY, [context.getHandler(), context.getClass()]) && !user.emailVerified) throw new ServerException(ERROR_RESPONSE.EMAIL_NOT_VERIFIED);
+    const owner = this.reflector.getAllAndOverride<OwnerParamOptions>(OWNER_PARAM_KEY, [context.getHandler(), context.getClass()]);
+    if (owner && !owner.bypassRoles?.includes(user.role!) && context.switchToHttp().getRequest().params?.[owner.param] !== user.id) throw new ServerException(ERROR_RESPONSE.RESOURCE_FORBIDDEN);
 
     // Check if authorization is needed
     const allowedRoles = this.reflector.getAllAndOverride<Role[]>(ACCESS_ROLES_KEY, [

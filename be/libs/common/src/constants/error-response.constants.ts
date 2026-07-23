@@ -6,6 +6,16 @@ export const ERROR_RESPONSE = {
     errorCode: 'internal_server_error',
     message: `Internal Server Error`,
   },
+  SERVICE_UNAVAILABLE: {
+    statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+    errorCode: 'service_unavailable',
+    message: 'Service temporarily unavailable',
+  },
+  RATE_LIMITED: {
+    statusCode: HttpStatus.TOO_MANY_REQUESTS,
+    errorCode: 'rate_limited',
+    message: 'Too many requests',
+  },
   UNAUTHORIZED: {
     statusCode: HttpStatus.UNAUTHORIZED,
     errorCode: 'unauthorized',

@@ -1,4 +1,12 @@
-import { Public, SuccessResponseDto, SwaggerApiDocument, User, UserRequestPayload } from '@app/common';
+import {
+  Public,
+  RESPONSE_MESSAGE,
+  ResponseMessage,
+  SuccessResponseDto,
+  SwaggerApiDocument,
+  User,
+  UserRequestPayload,
+} from '@app/common';
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RefreshToken } from 'src/decorators';
@@ -39,6 +47,7 @@ export class AuthController {
 
   @Post('sign-up')
   @Public()
+  @ResponseMessage(RESPONSE_MESSAGE.CREATED)
   @SwaggerApiDocument({
     response: {
       status: HttpStatus.OK,
@@ -126,6 +135,7 @@ export class AuthController {
 
   @Post('reset-password')
   @Public()
+  @ResponseMessage(RESPONSE_MESSAGE.UPDATED)
   @SwaggerApiDocument({
     response: { type: SuccessResponseDto },
     body: { type: ResetPasswordDto, required: true },
@@ -142,6 +152,7 @@ export class AuthController {
   }
 
   @Post('change-password')
+  @ResponseMessage(RESPONSE_MESSAGE.UPDATED)
   @ApiBearerAuth()
   @SwaggerApiDocument({
     response: { type: SuccessResponseDto },

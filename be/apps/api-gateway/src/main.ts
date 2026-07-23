@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
+import { ERROR_RESPONSE } from '@app/common';
 import { Readable } from 'node:stream';
 import { NestFactory } from '@nestjs/core';
 import { Algorithm, JsonWebTokenError, JwtPayload, TokenExpiredError, verify } from 'jsonwebtoken';
 import { ApiGatewayModule } from './api-gateway.module';
+import { GatewayRateLimitService } from './rate-limit.service';
 
 const METHODS_WITHOUT_BODY = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -129,20 +131,43 @@ async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule, { bodyParser: false });
   const expressApp = app.getHttpAdapter().getInstance();
   const serviceTargets = getServiceTargets();
+  const rateLimiter = app.get(GatewayRateLimitService);
 
   expressApp.use(async (req: Request, res: Response, next: NextFunction) => {
     const serviceKey = req.path.split('/').filter(Boolean)[0];
     const target = serviceTargets[serviceKey];
     if (!target) return next();
 
+    const isSensitiveAuthRoute = req.path.startsWith('/auth-service/api/auth/');
+    const limit = isSensitiveAuthRoute ? 10 : 120;
+    const windowSeconds = 60;
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const rateLimit = await rateLimiter.consume(`rate-limit:${clientIp}:${serviceKey}`, limit, windowSeconds);
+    if (!rateLimit.allowed) {
+      res.setHeader('Retry-After', rateLimit.retryAfterSeconds);
+      return res.status(ERROR_RESPONSE.RATE_LIMITED.statusCode).json({
+        code: ERROR_RESPONSE.RATE_LIMITED.statusCode,
+        message: ERROR_RESPONSE.RATE_LIMITED.message,
+        data: null,
+      });
+    }
+
     try {
       const user = getAuthenticatedUser(req);
       await proxyRequest(req, res, target, user);
     } catch (error) {
       if (error instanceof TokenExpiredError || error instanceof JsonWebTokenError) {
-        return res.status(401).json({ statusCode: 401, message: 'Unauthorized' });
+        return res.status(ERROR_RESPONSE.UNAUTHORIZED.statusCode).json({
+          code: ERROR_RESPONSE.UNAUTHORIZED.statusCode,
+          message: ERROR_RESPONSE.UNAUTHORIZED.message,
+          data: null,
+        });
       }
-      return res.status(502).json({ statusCode: 502, message: `Unable to reach ${serviceKey}` });
+      return res.status(ERROR_RESPONSE.SERVICE_UNAVAILABLE.statusCode).json({
+        code: ERROR_RESPONSE.SERVICE_UNAVAILABLE.statusCode,
+        message: ERROR_RESPONSE.SERVICE_UNAVAILABLE.message,
+        data: null,
+      });
     }
   });
 

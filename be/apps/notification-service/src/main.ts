@@ -1,5 +1,5 @@
 import { getAppCommonConfig, getWinstonConfig, logBootstrapInfo, setupSwagger } from '@app/common';
-import { PayloadValidationPipe } from '@app/common';
+import { PayloadValidationPipe, ResponseInterceptor } from '@app/common';
 import {
   MicroserviceConfigOptions,
   MicroserviceFactory,
@@ -40,7 +40,10 @@ async function bootstrap() {
   // );
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new PayloadValidationPipe());
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(reflector),
+    new ResponseInterceptor(reflector),
+  );
 
   setupSwagger(app, appName, ['/notification-service']);
   await app.init();

@@ -8,3 +8,6 @@ export * from './parse-array-params.decorator';
 export * from './rbac.decorator';
 export * from './roles.decorator';
 export * from './permissions.decorator';
+export * from './response-message.decorator';
+export * from './ownership.decorator';
+export * from './verified-email.decorator';

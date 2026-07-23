@@ -86,13 +86,27 @@ export class AllExceptionFilter implements ExceptionFilter {
 
     if (isRpcContext) return throwError(() => errorData);
 
+    // Keep HTTP failures in the same stable envelope as successful responses.
+    // RPC consumers retain `statusCode` above for backward-compatible error handling.
+    const httpErrorResponse = {
+      code: errorData.statusCode || httpStatus,
+      message: errorData.message || ERROR_RESPONSE.INTERNAL_SERVER_ERROR.message,
+      data: null,
+      ...(errorData.errorCode ? { errorCode: errorData.errorCode } : {}),
+      ...(errorData.timestamp ? { timestamp: errorData.timestamp } : {}),
+      ...(errorData.path ? { path: errorData.path } : {}),
+      ...((errorData as { errors?: unknown }).errors
+        ? { errors: (errorData as { errors?: unknown }).errors }
+        : {}),
+    };
+
     if (!response.headersSent) {
       if (httpAdapter) {
-        httpAdapter.reply(ctx.getResponse(), errorData, httpStatus);
+        httpAdapter.reply(ctx.getResponse(), httpErrorResponse, httpStatus);
       } else {
         response
           .status(httpStatus)
-          .json(errorData);
+          .json(httpErrorResponse);
       }
     } else {
       this.logger.warn('Response already sent, skipping error response', {
